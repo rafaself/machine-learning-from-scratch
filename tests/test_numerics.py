@@ -355,3 +355,47 @@ def test_mlp_demonstration_target_shape_noise_and_split(demonstration_values):
     partitions = [values[f"demo_{name}_ids"] for name in ("train", "validation", "test")]
     assert list(map(len, partitions)) == [210, 75, 75]
     np.testing.assert_array_equal(np.sort(np.concatenate(partitions)), np.arange(360))
+
+
+def test_regression_parameter_visualization_uses_the_displayed_loss(demonstration_values):
+    values = demonstration_values("linear-regression")
+    np.testing.assert_allclose(
+        values["intuition_candidate_losses"], [.6725, .045, .9225], atol=1e-12
+    )
+    surface = values["intuition_loss_surface"]
+    assert surface.shape == (100, 100) and np.isfinite(surface).all()
+    i, j = 23, 61
+    slope = values["intuition_slopes"][i, j]
+    bias = values["intuition_biases"][i, j]
+    independent = sum(
+        (slope * x + bias - y)**2
+        for x, y in zip(values["intuition_x"], values["intuition_y"])
+    ) / 8
+    assert surface[i, j] == pytest.approx(independent, abs=1e-12)
+
+
+def test_quadratic_visualization_states_and_loss_are_consistent(demonstration_values):
+    values = demonstration_values("gradient-descent")
+    states, losses = values["intuition_trajectory"], values["intuition_trajectory_losses"]
+    assert states.shape == (13, 2)
+    np.testing.assert_allclose(states[0], [2.5, .9], atol=1e-12)
+    np.testing.assert_allclose(states[1:], states[:-1] * [.8, -.6], atol=1e-12)
+    np.testing.assert_allclose(losses, np.sum(states**2 * [1, 8], axis=1) / 2)
+    assert np.all(np.diff(losses) < 0)
+
+
+def test_batch_comparison_matches_updates_full_loss_and_data_budgets(demonstration_values):
+    values = demonstration_values("gradient-descent")
+    targets = np.array([-2., -1., 1., 2.])
+    orders = values["intuition_orders"]
+    np.testing.assert_array_equal(np.sort(orders, axis=1), np.tile(targets, (20, 1)))
+    for name, (means, size) in values["intuition_schedules"].items():
+        result = values["intuition_comparison"][name]
+        states = result["states"]
+        assert states[0] == 3
+        np.testing.assert_allclose(states[1:], .85 * states[:-1] + .15 * means, atol=1e-12)
+        independent_full_loss = np.mean((states[:, None] - targets)**2, axis=1) / 2
+        np.testing.assert_allclose(result["excess_loss"], independent_full_loss - 1.25, atol=1e-12)
+        np.testing.assert_array_equal(result["examples"], result["updates"] * size)
+        assert result["examples"][-1] == 80
+        assert result["updates"][-1] == {"Batch GD": 20, "SGD": 80, "Mini-batch SGD": 40}[name]
