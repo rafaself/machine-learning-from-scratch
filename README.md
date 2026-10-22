@@ -136,7 +136,7 @@ work from update counts. Report failures and variation across seeds.
 notebooks/01-foundations/        Linear regression, optimization, logistic regression
 notebooks/02-neural-networks/    Perceptron, backpropagation, one/two hidden layers
 src/ml_from_scratch/             Empty package reserved for justified reusable code
-tests/                          Notebook structure and exercise-pairing checks
+tests/                          Separate structure and fresh-kernel execution checks
 pyproject.toml, uv.lock          Dependencies and reproducible environment
 AGENTS.md                       Educational conventions for future editing
 ~~~
@@ -147,10 +147,20 @@ Run the repository checks with:
 uv run pytest
 ~~~
 
-Tests validate notebook schemas, chapter structure, exercise IDs, adjacent
-answer cells, collapsed reference blocks, and local notebook links. They allow
-completed answer cells on study branches; they do not grade answers or replace
-mathematical review.
+Structural tests validate notebook schemas, chapter structure, exercise IDs,
+adjacent answer cells, collapsed reference blocks, and local notebook links.
+Execution tests run each chapter's demonstrations in a fresh kernel and a
+temporary working directory, checking that plots render without running learner
+answers or reference snippets. Notebook files and retained outputs are not
+rewritten. Run either group separately with:
+
+~~~bash
+uv run pytest tests/test_curriculum.py
+uv run pytest tests/test_execution.py
+~~~
+
+The checks allow completed answer cells on study branches; they do not grade
+answers or replace mathematical review.
 Before sharing a changed demonstration, restart its kernel and run the notebook
 from top to bottom. Review mathematical reasoning and rendered equations as
 well as execution.
