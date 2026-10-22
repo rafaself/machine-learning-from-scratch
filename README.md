@@ -5,9 +5,10 @@ derivations, small worked examples, NumPy implementations, and reproducible
 experiments. Read it as an interactive textbook: understand a model, derive its
 learning rules, implement them yourself, and examine what the evidence supports.
 
-The reference material is **unsolved**. Worked examples and executable
-demonstrations teach concepts; numbered exercises have dedicated blank answer
-cells. Complete your work on a separate Git branch.
+Learner answer cells start **blank**. Every numbered exercise has a dedicated
+answer cell followed by a collapsed hint and a collapsed worked solution.
+Try the exercise first, use a hint if needed, then compare your reasoning.
+Complete your own work on a separate Git branch.
 
 ## Recommended study order
 
@@ -74,7 +75,7 @@ uv run jupyter lab
 ~~~
 
 Keep completed answers and experiments on this branch. Commit progress normally,
-and return to a clean `main` to inspect the unsolved reference. Save or commit
+and return to a clean `main` to inspect the original learner answer cells. Save or commit
 your work before switching branches. Do not merge completed exercise answers
 into the reference curriculum.
 
@@ -85,11 +86,23 @@ instructions, an expected outcome, and an immediately adjacent answer cell:
   Markdown cell. Explain assumptions and reasoning; use Jupyter LaTeX for
   equations and show intermediate calculations.
 - **Programming challenges:** implement your own code in the next code cell.
-  TODO comments mark the place to work; no completed estimator or training loop
-  is supplied.
+  TODO comments mark the place to work. Reference implementations are displayed
+  as fenced code inside the collapsed solution, not executable notebook cells.
 - **Experimental investigations:** use the next code cell for runs, tables,
   plots, and recorded settings. Add written interpretation in comments or in
   additional cells on your study branch.
+
+After each answer cell, **Show hint** gives a nudge without the full answer.
+**Show worked solution — try the exercise first** reveals a separate reference.
+For open-ended questions, the reference is one justified response, not the
+only acceptable answer. Experimental solutions include runnable example
+investigations and explain how to interpret variable results.
+
+Reference code is read-only displayed text until you deliberately copy it.
+Run All does not execute reference snippets or define solution functions.
+Some snippets build on named earlier solutions in the same chapter; no
+snippet depends on another notebook. Hints and solutions use native HTML
+disclosure blocks, with no additional dependency.
 
 Demonstration cells are labeled in notebook metadata and contain working
 illustrations, data generation, or visualizations. They run in order with blank
@@ -103,7 +116,8 @@ Use English, standard Python naming, readable NumPy operations, and small
 functions. Implement learning algorithms manually without PyTorch, TensorFlow,
 scikit-learn, or automatic differentiation. Extract reusable code into
 `src/ml_from_scratch/` only after a concrete need for reuse or testing.
-No completed algorithm implementations are included in that package.
+Reference implementations stay in collapsed notebook Markdown; the package
+remains reserved for independently justified reusable code.
 
 Examples are rows of `X`, shape `(n, d)`. Linear/logistic regression use targets
 `(n,)`; network chapters explicitly switch to `(n, 1)` targets/probabilities.
@@ -134,7 +148,7 @@ uv run pytest
 ~~~
 
 Tests validate notebook schemas, chapter structure, exercise IDs, adjacent
-answer cells, and local notebook links. They allow completed answer cells on
+answer cells, collapsed reference blocks, and local notebook links. They allow completed answer cells on
 study branches; they do not grade answers or replace mathematical review.
 Before sharing a changed demonstration, restart its kernel and run the notebook
 from top to bottom. Review mathematical reasoning and rendered equations as

@@ -2,12 +2,14 @@
 
 ## Preserve the learning material
 
-- Keep the reference curriculum unsolved. Distinguish worked teaching examples
-  from numbered exercises; do not add completed exercise implementations or
-  answer keys to the notebooks or package.
+- Keep learner answer cells blank in the reference curriculum. Provide hints
+  and worked reference solutions only in separate, collapsed Markdown cells
+  immediately after each learner answer. Render reference code as fenced text;
+  do not execute it during Run All or move it into the package.
 - Preserve student answers, outputs, and unrelated user work. Inspect the current
   branch and changes before editing. Students complete exercises on separate
-  study branches; their completed answers are not merged into the reference.
+  study branches; their completed answer cells are not merged into the reference.
+  Author-provided collapsed reference solutions are part of the curriculum.
 - Keep explanations substantial and self-contained. Define notation before use,
   justify derivation steps, give intuition and small worked examples, and state
   assumptions and limitations.
@@ -22,13 +24,17 @@
   cell, with matching IDs in the existing curriculum metadata.
 - Written, numerical, mathematical, and critical questions use editable Markdown
   answer cells. Programming and experimental tasks use dedicated code cells.
-- State the task and expected outcome; add useful hints without revealing the
-  exercise solution. Code-answer placeholders contain comments, not completed
-  functions, failing stubs, or answer-key imports.
+- State the task and expected outcome. Follow the learner answer with a
+  collapsed hint, then a separately collapsed worked solution. Match all four
+  cells by exercise ID; no open attribute should expose reference content by
+  default. Code-answer placeholders contain comments only.
+- Reference solutions explain reasoning. Open-ended tasks provide suggested
+  responses and alternatives; experimental references do not invent results.
+  Clearly name dependencies on earlier reference snippets in the same chapter.
 - Demonstrations run independently of unfinished answers and do not supply
   completed implementations of the challenges.
 - Preserve the distinction between explanation, demonstration, exercise, and
-  answer in cell metadata. Tests must allow students to fill their answer cells.
+  answer, hint, and solution in cell metadata. Tests must allow students to fill their answer cells.
 
 ## Mathematics and implementation
 
