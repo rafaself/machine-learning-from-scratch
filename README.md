@@ -10,6 +10,9 @@ answer cell followed by a collapsed hint and a collapsed worked solution.
 Try the exercise first, use a hint if needed, then compare your reasoning.
 Complete your own work on a separate Git branch.
 
+The complete curriculum is currently published on `curriculum-notebooks`.
+Use that branch as the clean reference while it awaits merging into `main`.
+
 ## Recommended study order
 
 | Order | Notebook | Main questions |
@@ -47,7 +50,7 @@ perceptron update bound, explain their assumptions and intermediate inequalities
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run:
 
 ~~~bash
-git clone https://github.com/rafaself/machine-learning-from-scratch.git
+git clone --branch curriculum-notebooks https://github.com/rafaself/machine-learning-from-scratch.git
 cd machine-learning-from-scratch
 uv sync --locked
 uv run jupyter lab
@@ -65,19 +68,24 @@ development group includes JupyterLab, ipykernel, and pytest.
 
 ## Complete exercises on your own branch
 
-Begin with a clean checkout of the reference material:
+Begin with a clean checkout of the currently published reference material.
+Save or commit any existing work before switching branches:
 
 ~~~bash
-git switch main
+git switch curriculum-notebooks
 git pull --ff-only
 git switch -c study/your-name
 uv run jupyter lab
 ~~~
 
 Keep completed answers and experiments on this branch. Commit progress normally,
-and return to a clean `main` to inspect the original learner answer cells.
-Save or commit your work before switching branches. Do not merge completed
-exercise answers into the reference curriculum.
+and return to a clean reference branch to inspect the original learner answer
+cells. Do not merge completed exercise answers into the reference curriculum.
+
+After the complete curriculum is merged into `main`, use `main` as the clean
+reference in the commands above and update the clone command accordingly.
+The reference keeps learner answer cells unanswered; students continue using
+their own study branches.
 
 Every exercise has a sequential chapter-specific ID, a type, explicit
 instructions, an expected outcome, and an immediately adjacent answer cell:
