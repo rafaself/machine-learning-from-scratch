@@ -4,21 +4,19 @@ import ast
 import copy
 import re
 from functools import lru_cache
-from pathlib import Path
 
 import nbformat
 import numpy as np
 import pytest
+from curriculum_support import ROOT, notebook_path
 
-ROOT = Path(__file__).resolve().parents[1]
 
 
 @lru_cache
 def reference_functions(name):
     """Load definitions only; never run experiments or learner answer cells."""
-    paths = list((ROOT / "notebooks").glob(f"*/{name}.ipynb"))
-    assert len(paths) == 1
-    notebook = nbformat.read(paths[0], as_version=4)
+    path = notebook_path(name)
+    notebook = nbformat.read(path, as_version=4)
     namespace = {"np": np}
     for cell in notebook.cells:
         if cell.metadata.get("curriculum", {}).get("role") != "solution":
@@ -29,7 +27,7 @@ def reference_functions(name):
                 node for node in tree.body
                 if isinstance(node, (ast.FunctionDef, ast.Import, ast.ImportFrom))
             ]
-            exec(compile(tree, f"{paths[0].name}:{cell.id}", "exec"), namespace)
+            exec(compile(tree, f"{path.name}:{cell.id}", "exec"), namespace)
     return namespace
 
 
@@ -275,7 +273,7 @@ def demonstration_values(monkeypatch):
     monkeypatch.setattr(plt, "show", lambda: None)
 
     def load(name):
-        path, = (ROOT / "notebooks").glob(f"*/{name}.ipynb")
+        path = notebook_path(name)
         namespace = {}
         for cell in nbformat.read(path, as_version=4).cells:
             if cell.metadata.get("curriculum", {}).get("role") == "demonstration":

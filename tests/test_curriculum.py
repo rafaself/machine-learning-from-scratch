@@ -5,16 +5,9 @@ from pathlib import Path
 
 import nbformat
 import pytest
+from curriculum_support import REGISTRY, ROOT, published_notebooks
 
-ROOT = Path(__file__).resolve().parents[1]
-NOTEBOOKS = (
-    "01-foundations/linear-regression.ipynb",
-    "01-foundations/gradient-descent.ipynb",
-    "01-foundations/logistic-regression.ipynb",
-    "02-neural-networks/perceptron.ipynb",
-    "02-neural-networks/backpropagation.ipynb",
-    "02-neural-networks/multilayer-perceptron.ipynb",
-)
+NOTEBOOKS = published_notebooks()
 SECTIONS = (
     "Introduction and learning objectives",
     "Prerequisites and mathematical foundations",
@@ -31,7 +24,7 @@ KINDS = {"conceptual", "mathematical", "numerical", "programming", "experimental
 
 @pytest.fixture(params=NOTEBOOKS, ids=lambda value: Path(value).stem)
 def lesson(request):
-    path = ROOT / "notebooks" / request.param
+    path = ROOT / request.param
     return path, nbformat.read(path, as_version=4)
 
 
@@ -82,7 +75,9 @@ def test_exercises_have_adjacent_typed_answer_cells(lesson):
         # Student answers are allowed: content is deliberately not constrained.
     assert exercise_ids
     assert answer_ids == exercise_ids
-    chapter = notebook.metadata.curriculum.lesson_number
+    metadata = notebook.metadata.curriculum
+    chapter = metadata.get("exercise_prefix", metadata.get("lesson_number"))
+    assert chapter is not None
     assert exercise_ids == [f"{chapter}.{number:02}" for number in range(1, len(exercise_ids) + 1)]
 
 
@@ -187,9 +182,47 @@ def test_reference_python_is_displayed_and_compiles(lesson):
             assert blocks, f"missing reference code: {cell.id}"
 
 
-def test_all_planned_topics_exist():
-    assert set(NOTEBOOKS) <= {
-        str(path.relative_to(ROOT / "notebooks"))
-        for path in (ROOT / "notebooks").rglob("*.ipynb")
+def test_published_inventory_matches_registry():
+    discovered = {
+        str(path.relative_to(ROOT))
+        for directory in ("notebooks", "projects")
+        for path in (ROOT / directory).rglob("*.ipynb")
         if ".ipynb_checkpoints" not in path.parts
     }
+    assert set(NOTEBOOKS) == discovered
+
+
+def test_registry_readiness_paths_and_prerequisites():
+    assert REGISTRY["version"] == 1
+    stages = REGISTRY["stages"]
+    assert [stage["id"] for stage in stages] == [f"{i:02}" for i in range(9)]
+    seen, paths = set(), []
+    for stage in stages:
+        assert set(stage["prerequisites"]) <= seen
+        seen.add(stage["id"])
+        entries = [*stage["chapters"], stage["capstone"]]
+        statuses = [entry["status"] for entry in entries]
+        expected = "ready" if all(s == "ready" for s in statuses) else (
+            "partial" if "ready" in statuses else "planned"
+        )
+        assert stage["status"] == expected
+        for entry in entries:
+            assert entry["status"] in {"ready", "planned"}
+            path = ROOT / entry["path"]
+            assert path.resolve().is_relative_to(ROOT)
+            assert path.suffix == ".ipynb"
+            assert path.is_file() == (entry["status"] == "ready")
+            paths.append(entry["path"])
+    assert len(paths) == len(set(paths))
+
+
+def test_exercise_identifiers_are_globally_unique():
+    identifiers = []
+    for path in NOTEBOOKS:
+        notebook = nbformat.read(ROOT / path, as_version=4)
+        identifiers.extend(
+            cell.metadata.curriculum.exercise_id
+            for cell in notebook.cells
+            if cell.metadata.get("curriculum", {}).get("role") == "exercise"
+        )
+    assert len(identifiers) == len(set(identifiers))

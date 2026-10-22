@@ -17,12 +17,12 @@ Use that branch as the clean reference while it awaits merging into `main`.
 
 | Order | Notebook | Main questions |
 | --- | --- | --- |
-| 1 | [Linear regression](notebooks/01-foundations/linear-regression.ipynb) | How do data become matrices, residuals, an objective, and a fitted line? |
-| 2 | [Gradient descent](notebooks/01-foundations/gradient-descent.ipynb) | How do batch, stochastic, and mini-batch updates differ, and when are steps stable? |
-| 3 | [Logistic regression](notebooks/01-foundations/logistic-regression.ipynb) | How do scores become probabilities, likelihoods, gradients, and decisions? |
-| 4 | [Perceptron](notebooks/02-neural-networks/perceptron.ipynb) | What can a linear boundary learn, and what does its convergence guarantee assume? |
-| 5 | [Backpropagation](notebooks/02-neural-networks/backpropagation.ipynb) | How do local derivatives combine through shared paths and batched network layers? |
-| 6 | [Multilayer perceptron](notebooks/02-neural-networks/multilayer-perceptron.ipynb) | How do one and two hidden layers change representation, training, and generalization? |
+| 1 | [Linear regression](notebooks/01-ml-fundamentals/linear-regression.ipynb) | How do data become matrices, residuals, an objective, and a fitted line? |
+| 2 | [Gradient descent](notebooks/01-ml-fundamentals/gradient-descent.ipynb) | How do batch, stochastic, and mini-batch updates differ, and when are steps stable? |
+| 3 | [Logistic regression](notebooks/01-ml-fundamentals/logistic-regression.ipynb) | How do scores become probabilities, likelihoods, gradients, and decisions? |
+| 4 | [Perceptron](notebooks/04-neural-networks/perceptron.ipynb) | What can a linear boundary learn, and what does its convergence guarantee assume? |
+| 5 | [Backpropagation](notebooks/04-neural-networks/backpropagation.ipynb) | How do local derivatives combine through shared paths and batched network layers? |
+| 6 | [Multilayer perceptron](notebooks/04-neural-networks/multilayer-perceptron.ipynb) | How do one and two hidden layers change representation, training, and generalization? |
 
 Follow this order for a first pass. Each chapter restates its notation and
 foundations so it can also serve as an independent reference. No notebook
@@ -141,13 +141,18 @@ work from update counts. Report failures and variation across seeds.
 ## Repository organization and checks
 
 ~~~text
-notebooks/01-foundations/        Linear regression, optimization, logistic regression
-notebooks/02-neural-networks/    Perceptron, backpropagation, one/two hidden layers
+notebooks/01-ml-fundamentals/        Linear regression, optimization, logistic regression
+notebooks/04-neural-networks/    Perceptron, backpropagation, one/two hidden layers
 src/ml_from_scratch/             Empty package reserved for justified reusable code
 tests/                          Structure, execution, and numerical checks
 pyproject.toml, uv.lock          Dependencies and reproducible environment
 AGENTS.md                       Educational conventions for future editing
 ~~~
+
+The directory migration preserves the original notebook filenames and exercise
+IDs: `01-foundations` moved to `01-ml-fundamentals` and
+`02-neural-networks` moved to `04-neural-networks`. The new `curriculum.json`
+registry records published and planned chapters separately.
 
 Run the repository checks with:
 

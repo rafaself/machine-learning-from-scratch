@@ -4,14 +4,13 @@ import ast
 import copy
 import os
 import re
-from pathlib import Path
 
 import nbformat
 import pytest
 from nbclient import NotebookClient
+from curriculum_support import ROOT, published_notebooks
 
-ROOT = Path(__file__).resolve().parents[1]
-NOTEBOOKS = sorted((ROOT / "notebooks").glob("*/*.ipynb"))
+NOTEBOOKS = [ROOT / path for path in published_notebooks()]
 
 
 @pytest.mark.parametrize("path", NOTEBOOKS, ids=lambda path: path.stem)

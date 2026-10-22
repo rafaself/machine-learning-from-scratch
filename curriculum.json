@@ -1,0 +1,347 @@
+{
+  "version": 1,
+  "stages": [
+    {
+      "id": "00",
+      "title": "Mathematical Tools for Machine Learning",
+      "directory": "notebooks/00-mathematical-tools",
+      "status": "planned",
+      "prerequisites": [],
+      "progression": "core",
+      "chapters": [
+        {
+          "path": "notebooks/00-mathematical-tools/arrays-and-matrix-calculus.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/00-mathematical-tools/probability-and-statistics.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/00-mathematical-tools/numerical-computing.ipynb",
+          "status": "planned"
+        }
+      ],
+      "capstone": {
+        "path": "projects/00-mathematical-audit/mathematical-audit.ipynb",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "01",
+      "title": "Machine Learning Fundamentals",
+      "directory": "notebooks/01-ml-fundamentals",
+      "status": "partial",
+      "prerequisites": [
+        "00"
+      ],
+      "progression": "core",
+      "chapters": [
+        {
+          "path": "notebooks/01-ml-fundamentals/linear-regression.ipynb",
+          "status": "ready"
+        },
+        {
+          "path": "notebooks/01-ml-fundamentals/gradient-descent.ipynb",
+          "status": "ready"
+        },
+        {
+          "path": "notebooks/01-ml-fundamentals/logistic-regression.ipynb",
+          "status": "ready"
+        },
+        {
+          "path": "notebooks/01-ml-fundamentals/regularization-and-generalization.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/01-ml-fundamentals/evaluation-and-model-selection.ipynb",
+          "status": "planned"
+        }
+      ],
+      "capstone": {
+        "path": "projects/01-ml-pipeline/ml-pipeline.ipynb",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "02",
+      "title": "Classical Machine Learning",
+      "directory": "notebooks/02-classical-ml",
+      "status": "planned",
+      "prerequisites": [
+        "01"
+      ],
+      "progression": "core",
+      "chapters": [
+        {
+          "path": "notebooks/02-classical-ml/nearest-neighbors.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/02-classical-ml/generative-classifiers.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/02-classical-ml/decision-trees.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/02-classical-ml/tree-ensembles.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/02-classical-ml/support-vector-machines-and-kernels.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/02-classical-ml/statistical-learning-theory.ipynb",
+          "status": "planned"
+        }
+      ],
+      "capstone": {
+        "path": "projects/02-classical-benchmark/classical-benchmark.ipynb",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "03",
+      "title": "Unsupervised and Probabilistic Learning",
+      "directory": "notebooks/03-unsupervised-learning",
+      "status": "planned",
+      "prerequisites": [
+        "00",
+        "01"
+      ],
+      "progression": "core",
+      "chapters": [
+        {
+          "path": "notebooks/03-unsupervised-learning/clustering.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/03-unsupervised-learning/gaussian-mixtures-and-em.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/03-unsupervised-learning/pca-and-svd.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/03-unsupervised-learning/density-estimation-and-anomaly-detection.ipynb",
+          "status": "planned"
+        }
+      ],
+      "capstone": {
+        "path": "projects/03-representation-study/representation-study.ipynb",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "04",
+      "title": "Neural Networks and Deep Learning Foundations",
+      "directory": "notebooks/04-neural-networks",
+      "status": "partial",
+      "prerequisites": [
+        "01"
+      ],
+      "progression": "core",
+      "chapters": [
+        {
+          "path": "notebooks/04-neural-networks/perceptron.ipynb",
+          "status": "ready"
+        },
+        {
+          "path": "notebooks/04-neural-networks/backpropagation.ipynb",
+          "status": "ready"
+        },
+        {
+          "path": "notebooks/04-neural-networks/multilayer-perceptron.ipynb",
+          "status": "ready"
+        },
+        {
+          "path": "notebooks/04-neural-networks/momentum-and-adam.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/04-neural-networks/normalization-and-dropout.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/04-neural-networks/automatic-differentiation.ipynb",
+          "status": "planned"
+        }
+      ],
+      "capstone": {
+        "path": "projects/04-autodiff-and-network/autodiff-and-network.ipynb",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "05",
+      "title": "Deep Learning Architectures",
+      "directory": "notebooks/05-deep-learning",
+      "status": "planned",
+      "prerequisites": [
+        "04"
+      ],
+      "progression": "core",
+      "chapters": [
+        {
+          "path": "notebooks/05-deep-learning/pytorch-bridge.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/05-deep-learning/convolutional-and-residual-networks.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/05-deep-learning/recurrent-sequence-models.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/05-deep-learning/embeddings-and-transfer-learning.ipynb",
+          "status": "planned"
+        }
+      ],
+      "capstone": {
+        "path": "projects/05-image-and-sequence-models/image-and-sequence-models.ipynb",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "06",
+      "title": "Transformers and Generative Models",
+      "directory": "notebooks/06-transformers-generative",
+      "status": "planned",
+      "prerequisites": [
+        "05"
+      ],
+      "progression": "core",
+      "chapters": [
+        {
+          "path": "notebooks/06-transformers-generative/tokenization-and-text-data.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/06-transformers-generative/attention.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/06-transformers-generative/decoder-transformers.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/06-transformers-generative/language-model-training-and-generation.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/06-transformers-generative/variational-autoencoders.ipynb",
+          "status": "planned",
+          "optional": true
+        },
+        {
+          "path": "notebooks/06-transformers-generative/diffusion-models.ipynb",
+          "status": "planned",
+          "optional": true
+        },
+        {
+          "path": "notebooks/06-transformers-generative/multimodal-introduction.ipynb",
+          "status": "planned",
+          "optional": true
+        }
+      ],
+      "capstone": {
+        "path": "projects/06-decoder-language-model/decoder-language-model.ipynb",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "07",
+      "title": "Advanced Training and ML Systems",
+      "directory": "notebooks/07-ml-systems",
+      "status": "planned",
+      "prerequisites": [
+        "06"
+      ],
+      "progression": "core",
+      "chapters": [
+        {
+          "path": "notebooks/07-ml-systems/profiling-and-resource-accounting.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/07-ml-systems/efficient-training-and-attention.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/07-ml-systems/distributed-computation.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/07-ml-systems/scaling-and-data-quality.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/07-ml-systems/inference-and-quantization.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/07-ml-systems/fine-tuning-and-lora.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/07-ml-systems/preference-optimization-and-evaluation.ipynb",
+          "status": "planned"
+        }
+      ],
+      "capstone": {
+        "path": "projects/07-language-model-systems/language-model-systems.ipynb",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "08",
+      "title": "Advanced Specializations and Research",
+      "directory": "notebooks/08-research",
+      "status": "planned",
+      "prerequisites": [
+        "01"
+      ],
+      "progression": "independent-tracks",
+      "chapters": [
+        {
+          "path": "notebooks/08-research/reinforcement-learning.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/08-research/causal-inference.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/08-research/interpretability.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/08-research/uncertainty-estimation.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/08-research/mixture-of-experts.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/08-research/advanced-multimodal.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/08-research/retrieval-augmented-generation.ipynb",
+          "status": "planned"
+        }
+      ],
+      "capstone": {
+        "path": "projects/08-research-reproduction/research-reproduction.ipynb",
+        "status": "planned"
+      }
+    }
+  ]
+}
