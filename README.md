@@ -136,7 +136,7 @@ work from update counts. Report failures and variation across seeds.
 notebooks/01-foundations/        Linear regression, optimization, logistic regression
 notebooks/02-neural-networks/    Perceptron, backpropagation, one/two hidden layers
 src/ml_from_scratch/             Empty package reserved for justified reusable code
-tests/                          Separate structure and fresh-kernel execution checks
+tests/                          Structure, execution, and numerical checks
 pyproject.toml, uv.lock          Dependencies and reproducible environment
 AGENTS.md                       Educational conventions for future editing
 ~~~
@@ -157,7 +157,16 @@ rewritten. Run either group separately with:
 ~~~bash
 uv run pytest tests/test_curriculum.py
 uv run pytest tests/test_execution.py
+uv run pytest tests/test_numerics.py
 ~~~
+
+Numerical checks compare displayed reference gradients to central differences
+of independently written objectives, including mean-loss scaling, unpenalized
+biases, one-example batches, both network depths, and smooth regions of tanh and
+ReLU. They also check fixed worked values, extreme logits, plotted activation
+slopes, and dataset shape/split conventions. Only reference function definitions
+are loaded for these checks; the displayed experiments are not run as part of
+ordinary notebook execution.
 
 The checks allow completed answer cells on study branches; they do not grade
 answers or replace mathematical review.
