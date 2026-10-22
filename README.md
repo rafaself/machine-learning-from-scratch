@@ -4,9 +4,9 @@ A learning path from manually implemented regression to small Transformers,
 language-model training, measured systems improvements, and focused research.
 The audience already knows calculus, linear algebra, and programming.
 
-The curriculum is under active construction. **The first delivery targets
-complete Stages 00–01 and retains the existing neural-network chapters in
-Stage 04.** The availability table below records which material has passed
+The curriculum is under active construction. **Stages 00–01 are complete,
+and the existing neural-network chapters are retained in Stage 04.**
+The availability table below records which material has passed
 its publication gates. Later-stage plans are not finished lessons.
 
 Use **curriculum-notebooks** as the reference branch while this work awaits
@@ -19,7 +19,7 @@ merging into main. Keep learner answers on a separate study branch.
 | Stage | Learning objective | Availability |
 | --- | --- | --- |
 | [00 — Mathematical Tools for Machine Learning](notebooks/00-mathematical-tools/README.md) | Apply existing calculus, linear algebra, and programming knowledge to ML arrays, statistical objectives, and finite-precision computation. | ready |
-| [01 — Machine Learning Fundamentals](notebooks/01-ml-fundamentals/README.md) | Turn predictive questions into explicitly defined models, objectives, fitting procedures, and defensible evaluations. | partial |
+| [01 — Machine Learning Fundamentals](notebooks/01-ml-fundamentals/README.md) | Turn predictive questions into explicitly defined models, objectives, fitting procedures, and defensible evaluations. | ready |
 | [02 — Classical Machine Learning](notebooks/02-classical-ml/README.md) | Compare different inductive biases rather than treating one fitted model as a universal solution. | planned |
 | [03 — Unsupervised and Probabilistic Learning](notebooks/03-unsupervised-learning/README.md) | Discover and model structure without confusing a visually persuasive representation with validated evidence. | planned |
 | [04 — Neural Networks and Deep Learning Foundations](notebooks/04-neural-networks/README.md) | Understand differentiation, optimization, representation, and generalization as distinct parts of neural-network learning. | partial |
@@ -172,6 +172,10 @@ prefixes such as 00.01.01; projects use prefixes such as 01.P.01. Study order
 comes from the registry rather than from those legacy identifiers.
 
 ## Validation
+
+The [publication record](docs/validation.md) describes numerical, execution,
+preservation, rendering, and resource checks for this delivery. Stage guides
+publish measured time/memory for the supplied presets.
 
 ~~~bash
 uv run pytest

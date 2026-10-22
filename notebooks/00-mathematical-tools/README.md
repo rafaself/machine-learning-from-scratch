@@ -57,7 +57,7 @@ Matplotlib 3.11.2, Ryzen 7 6800H, CPU only, float64 by default,
 OPENBLAS_NUM_THREADS=1 and OMP_NUM_THREADS=1. Fresh-kernel elapsed time includes
 startup, plotting, and shutdown. Memory is the sampled sum of RSS for the
 validation driver and its kernel descendants at 20 ms intervals, including
-shared pages counted per process; it is an approximate upper accounting metric,
+shared pages counted per process; it is an approximate aggregate accounting metric,
 not isolated array memory or an exact peak. Browser memory is excluded.
 
 | Unit | Demo seconds / RSS MiB | All displayed references seconds / RSS MiB |

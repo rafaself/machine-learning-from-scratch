@@ -58,6 +58,23 @@ default CI does not execute unfinished learner implementations.
 
 ## Compute and reproducibility
 
+The three retained chapters were rechecked locally on 2026-10-22 using
+Python 3.12.15, NumPy 2.5.4, Matplotlib 3.11.2, CPU-only Ryzen 7 6800H,
+and one OpenBLAS/OpenMP thread. These are measurements of available chapters,
+not certification of the planned optimizer/autodiff material or full capstone.
+
+| Retained unit | Fresh-kernel demo seconds / RSS MiB | All displayed references seconds / RSS MiB |
+| --- | --- | --- |
+| Perceptron | 4.017 / 197.0 | 1.789 / 205.5 |
+| Backpropagation | 1.417 / 200.1 | 2.165 / 215.4 |
+| Multilayer perceptron | 1.497 / 203.0 | 9.859 / 234.7 |
+
+Elapsed time includes kernel startup, plotting, and shutdown. RSS is the
+approximate 20 ms sampled sum for the driver and kernel descendants, including
+shared pages counted per process and excluding browser memory. Each reference
+phase also runs its demonstrations, omits answer cells, and leaves canonical
+outputs untouched. No GPU is required for these supplied presets.
+
 CPU only. Small batches, widths, and graphs keep engine/debugging work inspectable. Large-model training is introduced after this foundation.
 
 Use fixed splits/seeds, record objective normalization and model selection,

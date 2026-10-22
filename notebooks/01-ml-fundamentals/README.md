@@ -1,6 +1,6 @@
 # Stage 01 — Machine Learning Fundamentals
 
-**Availability:** partial. Ready units are linked below; planned units
+**Availability:** ready. Ready units are linked below; planned units
 have no placeholder notebooks. Registry readiness describes published coverage.
 
 ## Goal and prerequisites
@@ -22,9 +22,9 @@ Turn predictive questions into explicitly defined models, objectives, fitting pr
 - [linear regression](linear-regression.ipynb): **ready**
 - [gradient descent](gradient-descent.ipynb): **ready**
 - [logistic regression](logistic-regression.ipynb): **ready**
-- regularization and generalization: **planned**
-- evaluation and model selection: **planned**
-- ml pipeline: **planned**
+- [regularization and generalization](regularization-and-generalization.ipynb): **ready**
+- [evaluation and model selection](evaluation-and-model-selection.ipynb): **ready**
+- [Capstone: ml pipeline](../../projects/01-ml-pipeline/ml-pipeline.ipynb): **ready**
 
 <!-- availability:end -->
 
@@ -55,6 +55,33 @@ blank implementation cells, self-check guidance, and a report template;
 default CI does not execute unfinished learner implementations.
 
 ## Compute and reproducibility
+
+Measured locally on 2026-10-22: Python 3.12.15, NumPy 2.5.4,
+Matplotlib 3.11.2, Ryzen 7 6800H; CPU only and float64 by default.
+OPENBLAS_NUM_THREADS=1 and OMP_NUM_THREADS=1. Each phase uses a fresh kernel.
+Elapsed time includes kernel startup, plotting, and shutdown. The approximate
+memory metric is a 20 ms sampled sum of driver/kernel descendant RSS (shared
+pages counted per process), excluding the browser; it is not exact peak or
+array-only memory.
+
+| Unit | Demo seconds / RSS MiB | All displayed references seconds / RSS MiB |
+| --- | --- | --- |
+| Linear regression | 1.633 / 189.1 | 1.862 / 194.6 |
+| Gradient descent | 2.064 / 210.4 | 2.735 / 213.8 |
+| Logistic regression | 1.448 / 202.7 | 2.073 / 211.6 |
+| Regularization and generalization | 1.745 / 184.0 | 1.713 / 190.1 |
+| Evaluation and model selection | 1.466 / 184.2 | 1.615 / 191.9 |
+| ML pipeline project | 1.396 / 189.2 | 2.691 / 194.1 |
+
+Reference phases execute all displayed Python in order plus demonstrations,
+excluding answers. The project uses 300 rows per task, five features, five
+training-only folds, four penalties, and 800 full-batch updates per fit, followed
+by training-only fitting, validation threshold selection and final reporting.
+The uncertainty exercises use 600 resamples. No GPU allocation is required.
+These supplied runs fit well below the 6 GiB host limit; larger variants and
+learner implementations need separate measurements. Two hours is a resumable
+study-session budget, not a required training duration. Reproduce calculations
+by entering displayed snippets in order in a disposable notebook copy.
 
 CPU only. Small datasets and bounded search grids are sufficient; no downloaded data, accelerator, or paid service is required.
 

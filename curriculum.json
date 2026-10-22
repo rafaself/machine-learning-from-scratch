@@ -31,7 +31,7 @@
       "id": "01",
       "title": "Machine Learning Fundamentals",
       "directory": "notebooks/01-ml-fundamentals",
-      "status": "partial",
+      "status": "ready",
       "prerequisites": [
         "00"
       ],
@@ -51,16 +51,16 @@
         },
         {
           "path": "notebooks/01-ml-fundamentals/regularization-and-generalization.ipynb",
-          "status": "planned"
+          "status": "ready"
         },
         {
           "path": "notebooks/01-ml-fundamentals/evaluation-and-model-selection.ipynb",
-          "status": "planned"
+          "status": "ready"
         }
       ],
       "capstone": {
         "path": "projects/01-ml-pipeline/ml-pipeline.ipynb",
-        "status": "planned"
+        "status": "ready"
       }
     },
     {

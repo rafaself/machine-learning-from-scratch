@@ -252,3 +252,34 @@ def test_documentation_local_links_resolve():
             if url.scheme or not url.path:
                 continue
             assert (path.parent / unquote(url.path)).resolve().exists(), (path, destination)
+
+
+def test_registry_stage_locations_and_explicit_new_prefixes():
+    for stage in REGISTRY['stages']:
+        for chapter in stage['chapters']:
+            assert Path(chapter['path']).parent == Path(stage['directory'])
+        project = stage['capstone']
+        assert project['path'].startswith(f"projects/{stage['id']}-")
+        for entry in [*stage['chapters'], project]:
+            if entry['status'] != 'ready':
+                continue
+            metadata = nbformat.read(ROOT / entry['path'], as_version=4).metadata.curriculum
+            if 'lesson_number' in metadata:
+                continue  # Legacy numbering is intentionally independent of stage order.
+            expected = rf"{stage['id']}\.P" if entry is project else rf"{stage['id']}\.\d{{2}}"
+            assert re.fullmatch(expected, metadata['exercise_prefix'])
+
+
+def test_published_projects_have_instructions_and_evidence_templates():
+    for stage in REGISTRY['stages']:
+        project = stage['capstone']
+        if project['status'] != 'ready':
+            continue
+        directory = (ROOT / project['path']).parent
+        instructions = (directory / 'README.md').read_text()
+        template = (directory / 'report-template.md').read_text()
+        for word in ('Explain', 'Implement', 'Verify', 'Evaluate'):
+            assert word in instructions and word in template
+        assert 'self-check' in instructions.lower() and 'checkpoint' in instructions.lower()
+        assert 'independent' in instructions.lower()
+        assert 'limitations' in template.lower()

@@ -551,3 +551,268 @@ def test_gaussian_project_hand_values_and_covariance_domain():
     with pytest.raises(ValueError):
         f["gaussian_nll"](X, [0, 0], [[1, .3], [.1, 1]])
     np.testing.assert_array_equal(X, before)
+
+
+OBJECTIVES = [
+    ("regularization-and-generalization", "ridge_loss_gradient", "regression"),
+    ("regularization-and-generalization", "regularized_logistic_loss_gradient", "classification"),
+    ("ml-pipeline", "pipeline_objective", "regression"),
+    ("ml-pipeline", "pipeline_objective", "classification"),
+]
+
+
+@pytest.mark.parametrize("chapter,function,task", OBJECTIVES)
+@pytest.mark.parametrize("n", [1, 5])
+@pytest.mark.parametrize("penalty", [0., .17])
+def test_new_supervised_objectives_independent_gradients_and_scaling(chapter, function, task, n, penalty):
+    f = reference_functions(chapter)[function]
+    X = np.linspace(-.8, 1.1, n*2).reshape(n, 2)
+    y = (np.arange(n) % 2).astype(float) if task == "classification" else np.linspace(.1, .9, n)
+    theta = np.array([.3, -.4, .2]); before = [a.copy() for a in (X, y, theta)]
+    def independent(candidate):
+        z = X @ candidate[:2] + candidate[2]
+        if task == "regression":
+            data = sum(float(a-b)**2 for a, b in zip(z, y)) / (2*n)
+        else:
+            p = 1 / (1 + np.exp(-z))
+            data = -sum(float(t)*np.log(q) + (1-float(t))*np.log(1-q) for t, q in zip(y, p)) / n
+        return data + penalty * sum(float(v)**2 for v in candidate[:2]) / 2
+    args = (task,) if function == "pipeline_objective" else ()
+    loss, dw, db = f(X, y, theta[:2], theta[2], penalty, *args)
+    assert loss == pytest.approx(independent(theta), abs=1e-12)
+    assert dw.shape == (2,) and np.ndim(db) == 0
+    np.testing.assert_allclose(np.r_[dw, db], central_difference(independent, theta), rtol=1e-5, atol=1e-8)
+    doubled = f(np.tile(X, (2, 1)), np.tile(y, 2), theta[:2], theta[2], penalty, *args)
+    np.testing.assert_allclose(np.r_[doubled[0], doubled[1], doubled[2]], np.r_[loss, dw, db], atol=1e-12)
+    zero = f(X, y, theta[:2], theta[2], 0., *args)
+    np.testing.assert_allclose(dw-zero[1], penalty*theta[:2], atol=1e-12)
+    assert db == zero[2]  # Intercept is never penalized.
+    for actual, original in zip((X, y, theta), before):
+        np.testing.assert_array_equal(actual, original)
+
+
+def test_ridge_hand_values_closed_form_and_rank_deficient_policy():
+    f = reference_functions("regularization-and-generalization")
+    loss, dw, db = f["ridge_loss_gradient"]([[1, 0], [0, 2]], [2, 1], [0, 1], 0, .2)
+    np.testing.assert_allclose([loss, *dw, db], [1.35, -1, 1.2, -.5])
+    w, b = f["fit_ridge"]([[-1], [1]], [-3, 3], 1.)
+    np.testing.assert_allclose(w, [1.5]); assert b == 0
+    X = np.array([[1., 2.], [2., 4.], [3., 6.]])
+    for penalty in (0., .2):
+        w, b = f["fit_ridge"](X, [1, 2, 3], penalty)
+        _, dw, db = f["ridge_loss_gradient"](X, [1, 2, 3], w, b, penalty)
+        np.testing.assert_allclose(np.r_[dw, db], 0., atol=1e-12)
+    with pytest.raises(ValueError):
+        f["fit_ridge"](X, [1, 2, 3], -.1)
+
+
+@pytest.mark.parametrize("chapter,function,task", OBJECTIVES)
+def test_supervised_domain_rejects_broadcasting_and_invalid_data(chapter, function, task):
+    f = reference_functions(chapter)[function]
+    args = (task,) if function == "pipeline_objective" else ()
+    for labels in ([[0], [1]], [0, np.nan]):
+        with pytest.raises(ValueError):
+            f([[1, 0], [0, 1]], labels, [.2, -.3], .1, .2, *args)
+    with pytest.raises(ValueError):
+        f([[1, 0], [0, 1]], [0, 1], [.2, -.3], .1, -.2, *args)
+    if task == "classification":
+        with pytest.raises(ValueError):
+            f([[1, 0], [0, 1]], [0, 2], [.2, -.3], .1, .2, *args)
+
+
+@pytest.mark.parametrize("chapter,function", [
+    ("regularization-and-generalization", "regularized_logistic_loss_gradient"),
+    ("ml-pipeline", "pipeline_objective"),
+])
+def test_new_classification_extreme_logits_are_finite(chapter, function):
+    args = ("classification",) if function == "pipeline_objective" else ()
+    with np.errstate(over="raise", invalid="raise"):
+        loss, dw, db = reference_functions(chapter)[function]([[1], [-1]], [0, 1], [1000], 0., 0., *args)
+    assert loss == 1000 and np.isfinite(dw).all() and np.isfinite(db)
+
+
+def test_manual_trainers_record_parameter_snapshots_and_converge_on_small_case():
+    f = reference_functions("regularization-and-generalization")
+    X, y = np.array([[-1.], [-.5], [.5], [1.]]), np.array([0., 0., 1., 1.])
+    w, b, history = f["fit_regularized_logistic"](X, y, penalty=.2, steps=300)
+    assert history.shape == (301,) and history[0] == pytest.approx(np.log(2))
+    assert np.all(np.diff(history) <= 1e-12)
+    assert history[-1] == pytest.approx(f["regularized_logistic_loss_gradient"](X, y, w, b, .2)[0])
+    with pytest.raises(ValueError):
+        f["fit_regularized_logistic"](X, np.zeros(4))
+    p = reference_functions("ml-pipeline")
+    model = p["pipeline_fit"](X, 2*X[:, 0]+.4, .2, "regression", steps=400)
+    expected_w = np.mean(X[:, 0] * (2*X[:, 0])) / (np.mean(X[:, 0]**2)+.2)
+    np.testing.assert_allclose(model['w'], [expected_w], atol=1e-9)
+    assert model['b'] == pytest.approx(.4, abs=1e-9)
+    assert len(model['history']) == 401 and np.all(np.diff(model['history']) <= 1e-12)
+    for task in ("regression", "classification"):
+        analytic, numeric = p["pipeline_gradient_check"](X, y, [.3], .2, .15, task)
+        np.testing.assert_allclose(analytic, numeric, atol=1e-8)
+
+
+def test_regression_metrics_and_constant_target_convention():
+    f = reference_functions("evaluation-and-model-selection")
+    result = f["regression_metrics"]([1, 2, 4], [0, 2, 5])
+    assert result == pytest.approx({"mse": 2/3, "rmse": np.sqrt(2/3), "mae": 2/3, "r2": 4/7})
+    assert f["regression_metrics"]([1, 2], [0, 0])["r2"] == -9
+    assert np.isnan(f["regression_metrics"]([1, 1], [1, 1])["r2"])
+    with pytest.raises(ValueError):
+        f["regression_metrics"]([1, 2], [[1], [2]])
+
+
+def test_classification_probability_hand_values_ties_and_empty_bins():
+    f = reference_functions("evaluation-and-model-selection")
+    y, p = [0, 0, 1, 1], [.1, .6, .4, .9]
+    metrics = f["classification_metrics"](y, p)
+    assert metrics == {"tp": 1, "fp": 1, "fn": 1, "tn": 1, "accuracy": .5, "precision": .5, "recall": .5, "f1": .5}
+    result = f["probability_metrics"](y, p)
+    assert result['brier'] == pytest.approx(.185)
+    assert result['clipped_log_loss'] == pytest.approx(.5108256237659907)
+    baseline = f["probability_metrics"](y, [.25]*4)
+    assert baseline['brier'] == .3125
+    assert baseline['clipped_log_loss'] == pytest.approx(.8369882167858358)
+    assert result['calibration'][:, 0].sum() == 4
+    boundaries = f["probability_metrics"]([0, 1], [0, 1], bins=5)
+    np.testing.assert_array_equal(boundaries['calibration'][:, 0], [1, 0, 0, 0, 1])
+    assert np.isnan(boundaries['calibration'][1:4, 1:]).all()
+    assert boundaries['brier'] == 0 and np.isfinite(boundaries['clipped_log_loss'])
+    tied = f["classification_metrics"]([0, 1], [.5, .5], .5)
+    assert tied['tp'] == tied['fp'] == 1 and tied['fn'] == tied['tn'] == 0
+
+
+def test_one_class_metric_conventions_are_explicit():
+    f = reference_functions("evaluation-and-model-selection")
+    result = f["classification_metrics"]([0, 0], [.1, .2])
+    assert result['accuracy'] == 1
+    assert all(np.isnan(result[key]) for key in ('precision', 'recall', 'f1'))
+    assert np.isfinite(f["probability_metrics"]([0, 0], [.1, .2])['brier'])
+    with pytest.raises(ValueError):
+        f["binary_curves"]([0, 0], [.1, .2])
+    with pytest.raises(ValueError):
+        f["classification_metrics"]([0, 1], [1.1, .2])
+
+
+@pytest.mark.parametrize("p", [[.1, .6, .4, .9], [.5, .5, .5, .5], [.8, .7, .2, .1], [.2, .5, .5, .8]])
+def test_roc_auc_against_independent_positive_negative_pair_comparison(p):
+    y = np.array([0, 0, 1, 1]); p = np.array(p)
+    expected = np.mean([float(a > b) + .5 * float(a == b) for a in p[y == 1] for b in p[y == 0]])
+    thresholds, fpr, tpr, precision, auc = reference_functions("evaluation-and-model-selection")["binary_curves"](y, p)
+    assert auc == pytest.approx(expected)
+    assert np.isinf(thresholds[0]) and precision[0] == 1
+    assert fpr[0] == tpr[0] == 0 and fpr[-1] == tpr[-1] == 1
+    assert np.all(np.diff(fpr) >= 0) and np.all(np.diff(tpr) >= 0)
+
+
+@pytest.mark.parametrize("n,folds", [(11, 3), (2, 2)])
+def test_fold_coverage_and_standardizer_boundary(n, folds):
+    f = reference_functions("evaluation-and-model-selection")
+    splits = f["kfold_indices"](n, folds, seed=13)
+    np.testing.assert_array_equal(np.sort(np.concatenate([held for _, held in splits])), np.arange(n))
+    for training, held in splits:
+        assert not set(training) & set(held)
+        assert set(training) | set(held) == set(range(n))
+    state = f["fit_standardizer"]([[0, 5], [2, 5]])
+    np.testing.assert_array_equal(state, [[1, 5], [1, 1]])
+    np.testing.assert_array_equal(f["transform_standardizer"]([[1000, 7]], state), [[999, 2]])
+    np.testing.assert_array_equal(state, [[1, 5], [1, 1]])
+    with pytest.raises(ValueError):
+        f["kfold_indices"](n, n+1)
+
+
+def test_ridge_cv_independent_augmented_solve_and_fold_local_fits(monkeypatch):
+    f = reference_functions("evaluation-and-model-selection")
+    X = np.column_stack([np.arange(12, dtype=float), np.ones(12)])
+    X[-1, 0] = 1000
+    y, grid = np.sin(np.arange(12)), [0., .1]
+    fitted_rows, original = [], f['fit_standardizer']
+    def tracked(rows):
+        fitted_rows.append(rows.copy())
+        return original(rows)
+    monkeypatch.setitem(f, 'fit_standardizer', tracked)
+    chosen, scores = f['ridge_cv'](X, y, grid, folds=3, seed=14)
+    splits = f['kfold_indices'](12, 3, 14)
+    assert len(fitted_rows) == 3
+    expected = np.empty((2, 3))
+    for j, (training, held) in enumerate(splits):
+        np.testing.assert_array_equal(fitted_rows[j], X[training])
+        mean, scale = X[training].mean(axis=0), X[training].std(axis=0)
+        scale[scale == 0] = 1
+        A = np.column_stack([(X[training]-mean)/scale, np.ones(len(training))])
+        B = np.column_stack([(X[held]-mean)/scale, np.ones(len(held))])
+        for i, penalty in enumerate(grid):
+            regularizer = np.diag([np.sqrt(len(training)*penalty)]*2 + [0.])
+            coefficients = np.linalg.lstsq(np.vstack([A, regularizer]), np.r_[y[training], np.zeros(3)], rcond=None)[0]
+            expected[i, j] = np.mean((B @ coefficients-y[held])**2)
+    np.testing.assert_allclose(scores, expected, rtol=1e-10, atol=1e-10)
+    assert chosen == grid[np.argmin(expected.mean(axis=1))]
+
+
+def test_validation_threshold_cost_and_ordered_tie_rule():
+    f = reference_functions("evaluation-and-model-selection")
+    threshold, costs = f['choose_threshold']([0, 0, 1, 1], [.1, .6, .4, .9], [.3, .5, .7], fp_cost=1, fn_cost=2)
+    np.testing.assert_allclose(costs, [.25, .75, .5]); assert threshold == .3
+    threshold, costs = f['choose_threshold']([0, 1], [.1, .9], [.6, .4])
+    assert threshold == .6 and np.all(costs == 0)
+
+
+def test_project_stratified_folds_and_preserved_split_data(demonstration_values):
+    f = reference_functions("ml-pipeline")
+    labels = np.array([0]*9+[1]*9)
+    splits = f['pipeline_folds'](18, 3, labels=labels)
+    np.testing.assert_array_equal(np.sort(np.concatenate([held for _, held in splits])), np.arange(18))
+    for training, held in splits:
+        assert not set(training) & set(held)
+        assert len(np.unique(labels[held])) == len(np.unique(labels[training])) == 2
+    with pytest.raises(ValueError):
+        f['pipeline_folds'](8, 5, labels=[0]*4+[1]*4)
+    values = demonstration_values('ml-pipeline')
+    np.testing.assert_array_equal(np.sort(np.concatenate(list(values['split_ids'].values()))), np.arange(300))
+    for task in ('regression', 'classification'):
+        assert [len(values['data_sets'][task][part][0]) for part in ('train', 'validation', 'test')] == [180, 60, 60]
+        assert all(values['data_sets'][task][part][0].shape[1] == 5 for part in ('train', 'validation', 'test'))
+
+
+@pytest.mark.parametrize("task", ["regression", "classification"])
+def test_project_cv_against_independent_fixed_work_training_and_isolation(task, monkeypatch):
+    f = reference_functions('ml-pipeline')
+    X = np.column_stack([np.linspace(-1, 1, 18), np.cos(np.arange(18))])
+    y = (np.arange(18) % 2).astype(float) if task == 'classification' else np.sin(np.arange(18))
+    grid, steps = [0., .2], 30
+    observed_rows, standardizer = [], f['pipeline_standardizer']
+    def tracked(rows):
+        observed_rows.append(rows.copy())
+        return standardizer(rows)
+    monkeypatch.setitem(f, 'pipeline_standardizer', tracked)
+    chosen, scores = f['pipeline_select'](X, y, grid, task, folds=3, steps=steps)
+    splits = f['pipeline_folds'](18, 3, 73, y if task == 'classification' else None)
+    expected = np.empty_like(scores)
+    assert len(observed_rows) == 3
+    for j, (training, held) in enumerate(splits):
+        np.testing.assert_array_equal(observed_rows[j], X[training])
+        mean, scale = X[training].mean(axis=0), X[training].std(axis=0)
+        A, B = (X[training]-mean)/scale, (X[held]-mean)/scale
+        for i, penalty in enumerate(grid):
+            w, b = np.zeros(2), 0.
+            for _ in range(steps):
+                z = A @ w + b
+                residual = z-y[training] if task == 'regression' else 1/(1+np.exp(-z))-y[training]
+                weight_gradient = np.array([sum(A[k, q]*residual[k] for k in range(len(A)))/len(A) for q in range(2)]) + penalty*w
+                w, b = w-.1*weight_gradient, b-.1*float(sum(residual)/len(A))
+            z = B @ w + b
+            if task == 'regression':
+                expected[i, j] = np.mean((z-y[held])**2)
+            else:
+                probability = 1/(1+np.exp(-z))
+                expected[i, j] = -np.mean(y[held]*np.log(probability)+(1-y[held])*np.log1p(-probability))
+    np.testing.assert_allclose(scores, expected, atol=1e-12)
+    assert chosen == grid[np.argmin(expected.mean(axis=1))]
+
+
+def test_new_visualizations_match_regularized_stationarity_and_roc_area(demonstration_values):
+    values = demonstration_values('regularization-and-generalization')
+    np.testing.assert_allclose(values['weights']-3+values['penalties']*values['weights'], 0., atol=1e-14)
+    np.testing.assert_allclose(values['data_loss'], (values['weights']-3)**2/2)
+    values = demonstration_values('evaluation-and-model-selection')
+    curve = values['axes'][1].lines[0]
+    assert np.trapezoid(curve.get_ydata(), curve.get_xdata()) == .75
