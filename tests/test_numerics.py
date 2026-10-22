@@ -397,3 +397,157 @@ def test_batch_comparison_matches_updates_full_loss_and_data_budgets(demonstrati
         np.testing.assert_array_equal(result["examples"], result["updates"] * size)
         assert result["examples"][-1] == 80
         assert result["updates"][-1] == {"Batch GD": 20, "SGD": 80, "Mini-batch SGD": 40}[name]
+
+
+@pytest.mark.parametrize("n, d, m", [(1, 2, 3), (4, 3, 2)])
+def test_affine_vjp_against_independent_scalarization(n, d, m):
+    f = reference_functions("arrays-and-matrix-calculus")
+    rng = np.random.default_rng(90)
+    X, W, b, G = rng.normal(size=(n, d)), rng.normal(size=(d, m)), rng.normal(size=m), rng.normal(size=(n, m))
+    originals = [a.copy() for a in (X, W, b, G)]
+    z, dx, dw, db = f["affine_vjp"](X, W, b, G)
+    np.testing.assert_allclose(z, X @ W + b)
+    for observed, parameter, objective in (
+        (dx, X, lambda v: np.sum((v @ W + b) * G)),
+        (dw, W, lambda v: np.sum((X @ v + b) * G)),
+        (db, b, lambda v: np.sum((X @ W + v) * G)),
+    ):
+        assert observed.shape == parameter.shape
+        np.testing.assert_allclose(observed, central_difference(objective, parameter), rtol=1e-6, atol=1e-8)
+    for actual, original in zip((X, W, b, G), originals):
+        np.testing.assert_array_equal(actual, original)
+    with pytest.raises(ValueError):
+        f["affine_vjp"](X, W, b, G.ravel())
+
+
+def test_jacobian_direction_curvature_and_diagnostic_values():
+    f = reference_functions("arrays-and-matrix-calculus")
+    function = lambda t: np.array([t[0]**2 + t[1], t[0] * t[1]])
+    np.testing.assert_allclose(f["finite_jacobian"](function, [2, 3]), [[4, 1], [3, 2]], atol=1e-8)
+    np.testing.assert_allclose(f["directional_jvp"](function, [2, 3], [1, -1]), [3, 1], atol=1e-8)
+    np.testing.assert_allclose(np.array([[4, 1], [3, 2]]).T @ [2, -1], [5, 0])
+    Q, r, point = np.array([[2., 1.], [1., 3.]]), np.array([1., -1.]), np.array([1., 2.])
+    assert .5 * point @ Q @ point - r @ point == 10
+    np.testing.assert_allclose(Q @ point - r, [3, 8])
+    np.testing.assert_allclose(f["hessian_vector"](lambda t: Q @ t - r, point, [1, -1]), [1, -2], atol=1e-8)
+    with pytest.raises(ValueError):
+        f["finite_jacobian"](function, [2, 3], step=0)
+    with pytest.raises(ValueError):
+        f["hessian_vector"](lambda t: np.ones(3), [1, 2], [1, 1])
+
+
+def test_bayes_covariance_and_prior_examples():
+    f = reference_functions("probability-and-statistics")
+    posterior, evidence = f["discrete_posterior"]([.1, .9], [.8, .1])
+    np.testing.assert_allclose(posterior, [8/17, 9/17])
+    assert evidence == pytest.approx(.17)
+    with pytest.raises(ValueError):
+        f["discrete_posterior"]([.5, .5], [0, 0])
+    X = np.array([[0., 1.], [2., 1.], [4., 4.]])
+    for ddof, expected in [(0, [[8/3, 2], [2, 2]]), (1, [[4, 3], [3, 3]])]:
+        mean, covariance = f["sample_covariance"](X, ddof)
+        np.testing.assert_allclose(mean, [2, 2])
+        np.testing.assert_allclose(covariance, expected)
+        np.testing.assert_allclose(covariance, np.cov(X, rowvar=False, ddof=ddof))
+    assert f["sample_covariance"](X[:, :1])[1].shape == (1, 1)
+    with pytest.raises(ValueError):
+        f["sample_covariance"]([[1]], ddof=1)
+    # Beta(3,5): posterior mode 1/3, mean 3/8, versus MLE 1/4.
+    assert (3 - 1) / (3 + 5 - 2) == pytest.approx(1/3)
+    assert 3 / (3 + 5) == .375
+
+
+@pytest.mark.parametrize("p", [.25, .55, .8])
+def test_bernoulli_gradient_with_independent_product_likelihood(p):
+    f = reference_functions("probability-and-statistics")
+    y = np.array([0., 1., 1., 0.])
+    loss, derivative = f["bernoulli_nll"](p, y)
+    independent = lambda t: -np.log(np.prod(t[0]**y * (1 - t[0])**(1-y))) / len(y)
+    assert loss == pytest.approx(independent([p]))
+    np.testing.assert_allclose([derivative], central_difference(independent, [p]), atol=1e-8)
+    with pytest.raises(ValueError):
+        f["bernoulli_nll"](0, y)
+
+
+def test_bootstrap_is_reproducible_and_uses_observation_resampling():
+    bootstrap = reference_functions("probability-and-statistics")["bootstrap_mean_interval"]
+    values = np.array([1., 2., 8., 10.])
+    mean, interval, estimates = bootstrap(values, repeats=30, level=.8, seed=51)
+    rng = np.random.default_rng(51)
+    independent = [np.mean(values[rng.choice(len(values), len(values), replace=True)]) for _ in range(30)]
+    assert mean == 5.25
+    np.testing.assert_array_equal(estimates, independent)
+    np.testing.assert_allclose(interval, np.quantile(independent, [.1, .9]))
+    np.testing.assert_array_equal(bootstrap(values, 30, .8, 51)[2], estimates)
+
+
+@pytest.mark.parametrize("axis", [None, 0, 1, (0, 1)])
+@pytest.mark.parametrize("keepdims", [False, True])
+def test_stable_logsumexp_reduction_values_and_shapes(axis, keepdims):
+    f = reference_functions("numerical-computing")
+    values = np.array([[1000., 999.], [-1000., -998.]])
+    expected = np.logaddexp.reduce(values, axis=axis, keepdims=keepdims)
+    result = f["stable_logsumexp"](values, axis, keepdims)
+    assert result.shape == expected.shape
+    np.testing.assert_allclose(result, expected, atol=1e-12)
+    with pytest.raises(ValueError):
+        f["stable_logsumexp"]([-np.inf, -np.inf])
+
+
+def test_softplus_solve_and_streaming_against_independent_oracles():
+    f = reference_functions("numerical-computing")
+    with np.errstate(over="raise", invalid="raise"):
+        value, derivative = f["softplus_sigmoid"]([-1000, 0, 1000])
+    np.testing.assert_allclose(value, [0, np.log(2), 1000])
+    np.testing.assert_allclose(derivative, [0, .5, 1])
+    assert np.ndim(f["softplus_sigmoid"](.2)[0]) == 0
+    x, residual, condition = f["solve_checked"]([[2, 0], [0, 4]], [6, 8])
+    np.testing.assert_allclose(x, [3, 2])
+    assert residual == 0 and condition == 2
+    with pytest.raises(np.linalg.LinAlgError):
+        f["solve_checked"]([[1, 1], [1, 1]], [1, 1])
+    values = 1e6 + np.random.default_rng(5).normal(0, .1, 500)
+    for ddof in (0, 1):
+        n, mean, variance = f["streaming_moments"]((values[i:i+17] for i in range(0, 500, 17)), ddof)
+        assert n == 500
+        assert mean == pytest.approx(values.mean(), abs=1e-8)
+        assert variance == pytest.approx(np.var(values, ddof=ddof), rel=1e-7)
+    with pytest.raises(ValueError):
+        f["streaming_moments"]([[]])
+
+
+@pytest.mark.parametrize("dimension", [1, 3])
+def test_gaussian_project_gradient_and_loglikelihood_independently(dimension):
+    f = reference_functions("mathematical-audit")
+    X = np.arange(5 * dimension).reshape(5, dimension) / 7
+    mu = np.linspace(-.2, .3, dimension)
+    covariance = np.eye(dimension) * 1.3 + .1
+    loss, gradient = f["gaussian_nll"](X, mu, covariance)
+    inverse = np.linalg.inv(covariance)  # Deliberately independent test oracle only.
+    def objective(candidate):
+        total = sum((row-candidate) @ inverse @ (row-candidate) for row in X)
+        return dimension / 2 * np.log(2*np.pi) + .5*np.log(np.linalg.det(covariance)) + total / (2*len(X))
+    assert loss == pytest.approx(objective(mu))
+    np.testing.assert_allclose(gradient, central_difference(objective, mu), rtol=1e-6, atol=1e-8)
+    analytic, numeric, absolute, relative = f["audit_mean_gradient"](X, mu, covariance)
+    np.testing.assert_allclose(analytic, numeric, atol=1e-8)
+    assert absolute < 1e-8 and relative < 1e-8
+
+
+def test_gaussian_project_hand_values_and_covariance_domain():
+    f = reference_functions("mathematical-audit")
+    X = np.array([[1., 0.], [3., 2.], [2., 4.], [4., 2.]])
+    before = X.copy()
+    mean, mle, unbiased = f["summary_estimates"](X)
+    np.testing.assert_allclose(mean, [2.5, 2])
+    np.testing.assert_allclose(mle, [[1.25, .5], [.5, 2]])
+    np.testing.assert_allclose(unbiased, [[5/3, 2/3], [2/3, 8/3]])
+    loss, gradient = f["gaussian_nll"](X, [0, 0], np.eye(2))
+    assert loss == pytest.approx(np.log(2*np.pi) + 6.75)
+    np.testing.assert_allclose(gradient, [-2.5, -2])
+    for covariance in (np.diag([-1., -1.]), np.diag([1., 0.])):
+        with pytest.raises(np.linalg.LinAlgError):
+            f["gaussian_nll"](X, [0, 0], covariance)
+    with pytest.raises(ValueError):
+        f["gaussian_nll"](X, [0, 0], [[1, .3], [.1, 1]])
+    np.testing.assert_array_equal(X, before)

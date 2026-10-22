@@ -5,26 +5,26 @@
       "id": "00",
       "title": "Mathematical Tools for Machine Learning",
       "directory": "notebooks/00-mathematical-tools",
-      "status": "planned",
+      "status": "ready",
       "prerequisites": [],
       "progression": "core",
       "chapters": [
         {
           "path": "notebooks/00-mathematical-tools/arrays-and-matrix-calculus.ipynb",
-          "status": "planned"
+          "status": "ready"
         },
         {
           "path": "notebooks/00-mathematical-tools/probability-and-statistics.ipynb",
-          "status": "planned"
+          "status": "ready"
         },
         {
           "path": "notebooks/00-mathematical-tools/numerical-computing.ipynb",
-          "status": "planned"
+          "status": "ready"
         }
       ],
       "capstone": {
         "path": "projects/00-mathematical-audit/mathematical-audit.ipynb",
-        "status": "planned"
+        "status": "ready"
       }
     },
     {

@@ -18,7 +18,7 @@ merging into main. Keep learner answers on a separate study branch.
 
 | Stage | Learning objective | Availability |
 | --- | --- | --- |
-| [00 — Mathematical Tools for Machine Learning](notebooks/00-mathematical-tools/README.md) | Apply existing calculus, linear algebra, and programming knowledge to ML arrays, statistical objectives, and finite-precision computation. | planned |
+| [00 — Mathematical Tools for Machine Learning](notebooks/00-mathematical-tools/README.md) | Apply existing calculus, linear algebra, and programming knowledge to ML arrays, statistical objectives, and finite-precision computation. | ready |
 | [01 — Machine Learning Fundamentals](notebooks/01-ml-fundamentals/README.md) | Turn predictive questions into explicitly defined models, objectives, fitting procedures, and defensible evaluations. | partial |
 | [02 — Classical Machine Learning](notebooks/02-classical-ml/README.md) | Compare different inductive biases rather than treating one fitted model as a universal solution. | planned |
 | [03 — Unsupervised and Probabilistic Learning](notebooks/03-unsupervised-learning/README.md) | Discover and model structure without confusing a visually persuasive representation with validated evidence. | planned |

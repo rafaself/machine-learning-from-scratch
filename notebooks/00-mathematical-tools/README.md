@@ -1,6 +1,6 @@
 # Stage 00 — Mathematical Tools for Machine Learning
 
-**Availability:** planned. Ready units are linked below; planned units
+**Availability:** ready. Ready units are linked below; planned units
 have no placeholder notebooks. Registry readiness describes published coverage.
 
 ## Goal and prerequisites
@@ -17,10 +17,10 @@ Apply existing calculus, linear algebra, and programming knowledge to ML arrays,
 
 <!-- availability:start -->
 
-- arrays and matrix calculus: **planned**
-- probability and statistics: **planned**
-- numerical computing: **planned**
-- mathematical audit: **planned**
+- [arrays and matrix calculus](arrays-and-matrix-calculus.ipynb): **ready**
+- [probability and statistics](probability-and-statistics.ipynb): **ready**
+- [numerical computing](numerical-computing.ipynb): **ready**
+- [Capstone: mathematical audit](../../projects/00-mathematical-audit/mathematical-audit.ipynb): **ready**
 
 <!-- availability:end -->
 
@@ -51,6 +51,30 @@ blank implementation cells, self-check guidance, and a report template;
 default CI does not execute unfinished learner implementations.
 
 ## Compute and reproducibility
+
+Measured locally on 2026-10-22: Python 3.12.15, NumPy 2.5.4,
+Matplotlib 3.11.2, Ryzen 7 6800H, CPU only, float64 by default,
+OPENBLAS_NUM_THREADS=1 and OMP_NUM_THREADS=1. Fresh-kernel elapsed time includes
+startup, plotting, and shutdown. Memory is the sampled sum of RSS for the
+validation driver and its kernel descendants at 20 ms intervals, including
+shared pages counted per process; it is an approximate upper accounting metric,
+not isolated array memory or an exact peak. Browser memory is excluded.
+
+| Unit | Demo seconds / RSS MiB | All displayed references seconds / RSS MiB |
+| --- | --- | --- |
+| Arrays and matrix calculus | 1.516 / 180.8 | 2.016 / 193.4 |
+| Probability and statistics | 1.412 / 188.4 | 1.591 / 192.9 |
+| Numerical computing | 1.594 / 187.2 | 1.680 / 190.7 |
+| Mathematical audit project | 1.449 / 191.6 | 1.547 / 193.3 |
+
+Reference runs include the chapter demonstrations and all displayed Python
+snippets in order, in a separate kernel per notebook. Answer cells are excluded.
+The largest required generated dataset here has 1200 scalar observations;
+the Gaussian project uses 512 training and 256 held-out rows of three features.
+No GPU allocation is required. These measurements establish that the supplied
+presets fit the budget; learner implementations and larger variants need their
+own measurements. Reproduce the calculations by entering the displayed snippets
+in order in a disposable copy, keeping the reference notebook unchanged.
 
 CPU only; tiny matrices and synthetic samples. Resource measurements are added when the published chapters and project are validated.
 
