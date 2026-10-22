@@ -1,0 +1,41 @@
+name: Curriculum checks
+
+on:
+  push:
+    branches: [main, curriculum-notebooks]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: curriculum-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: "0.13.4"
+          enable-cache: false
+
+      - name: Install the locked environment
+        run: uv sync --locked
+
+      - name: Check notebook structure
+        run: uv run --locked --no-sync pytest tests/test_curriculum.py
+
+      - name: Check mathematical and numerical examples
+        run: uv run --locked --no-sync pytest tests/test_numerics.py
+
+      - name: Execute demonstrations in fresh kernels
+        run: uv run --locked --no-sync pytest tests/test_execution.py

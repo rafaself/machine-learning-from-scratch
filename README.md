@@ -182,6 +182,12 @@ Before sharing a changed demonstration, restart its kernel and run the notebook
 from top to bottom. Review mathematical reasoning and rendered equations as
 well as execution.
 
+GitHub Actions runs the same three check groups as separate steps on pull
+requests and pushes to `main` or `curriculum-notebooks`. The workflow uses the
+locked environment and Python version selected by the repository, a read-only
+repository token, and actions pinned to commit SHAs. It does not rewrite
+notebooks or publish learner answers.
+
 Keep dependencies minimal and commit `pyproject.toml` with `uv.lock` when
 changing them through `uv add`. Virtual environments, caches, notebook
 checkpoints, and packaging output are excluded from Git.
