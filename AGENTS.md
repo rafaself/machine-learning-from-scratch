@@ -47,8 +47,13 @@
   do not average again during downstream matrix products or bias sums.
 - Derive and differentiate at one parameter snapshot. Separate backpropagation
   from the optimizer's parameter updates.
-- Use Python, NumPy, and Matplotlib. Avoid ML frameworks, automatic
-  differentiation, premature abstractions, and unnecessary dependencies.
+- Stages 00–04 use Python, NumPy, and Matplotlib. Derive gradients manually;
+  the Stage 04 autodiff engine is learner-built after manual backpropagation.
+- Stages 05–06 may use PyTorch for tensor/autograd/GPU infrastructure while
+  learners implement architectures and training loops. Stages 07–08 add
+  specialized tools only for a measured objective on the target machine.
+- Keep the current environment until an authored stage needs an addition.
+  Avoid premature abstractions and unnecessary dependencies.
 - Record seeds, splits, preprocessing, selection criteria, and work budgets.
   Keep held-out test observations out of fitting and repeated model selection.
 - Do not configure notebook output clearing: no stripping filters, hooks, or
@@ -64,3 +69,21 @@
 - Keep the existing minimal environment. Ask before adding a production
   dependency unless it is highly consolidated, safe, and trusted.
 - Do not change the GitHub remote, push, or merge without user authorization.
+
+## Stages, projects, and resource gates
+
+- Use curriculum.json for stage order, prerequisites, readiness, and published
+  chapter/capstone paths. Planned units have no placeholder notebooks.
+- Preserve legacy exercise IDs and cell IDs during moves. New notebooks use
+  explicit exercise_prefix metadata independent of the study order.
+- Published chapters and capstones follow the nine-section/exercise contract.
+  Project answer cells remain blank in the reference; report templates contain
+  instructions, not invented findings. Default CI never grades learner work.
+- Target the Ryzen 7 6800H / approximately 14 GiB RAM / 6 GiB RTX 3060 laptop:
+  standard working sets at most 6 GiB host and 5 GiB GPU memory. Correctness
+  checks stay short; ordinary experiments target 30 minutes and resumable
+  capstones roughly two hours. No required cloud or multi-GPU experiments.
+- Record measured configurations, elapsed times, and memory before declaring an
+  authored stage ready. Label future budgets as targets, not measurements.
+- Every stage's mastery gate requires explaining, implementing, independently
+  verifying, and evaluating. Research-track completion is independent per track.

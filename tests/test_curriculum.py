@@ -226,3 +226,29 @@ def test_exercise_identifiers_are_globally_unique():
             if cell.metadata.get("curriculum", {}).get("role") == "exercise"
         )
     assert len(identifiers) == len(set(identifiers))
+
+
+def test_stage_guides_cover_mastery_projects_and_compute():
+    headings = (
+        "## Goal and prerequisites", "## Ordered units",
+        "## Implementation requirements", "## Mastery gate",
+        "## Capstone", "## Compute and reproducibility", "## Readings",
+    )
+    for stage in REGISTRY["stages"]:
+        guide = (ROOT / stage["directory"] / "README.md").read_text()
+        assert f"**Availability:** {stage['status']}." in guide
+        assert all(heading in guide for heading in headings)
+        assert all(word in guide for word in ("Explain", "Implement", "Verify", "Evaluate"))
+
+
+def test_documentation_local_links_resolve():
+    from urllib.parse import unquote, urlsplit
+
+    for path in ROOT.rglob("*.md"):
+        if any(part.startswith(".") for part in path.relative_to(ROOT).parts):
+            continue
+        for destination in re.findall(r"\]\(([^)]+)\)", path.read_text()):
+            url = urlsplit(destination)
+            if url.scheme or not url.path:
+                continue
+            assert (path.parent / unquote(url.path)).resolve().exists(), (path, destination)
