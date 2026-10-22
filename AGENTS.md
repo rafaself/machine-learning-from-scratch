@@ -33,8 +33,8 @@
   Clearly name dependencies on earlier reference snippets in the same chapter.
 - Demonstrations run independently of unfinished answers and do not supply
   completed implementations of the challenges.
-- Preserve the distinction between explanation, demonstration, exercise, and
-  answer, hint, and solution in cell metadata. Tests must allow students to fill their answer cells.
+- Distinguish explanation, demonstration, exercise, answer, hint, and solution
+  in cell metadata. Tests must allow students to fill their answer cells.
 
 ## Mathematics and implementation
 

@@ -75,9 +75,9 @@ uv run jupyter lab
 ~~~
 
 Keep completed answers and experiments on this branch. Commit progress normally,
-and return to a clean `main` to inspect the original learner answer cells. Save or commit
-your work before switching branches. Do not merge completed exercise answers
-into the reference curriculum.
+and return to a clean `main` to inspect the original learner answer cells.
+Save or commit your work before switching branches. Do not merge completed
+exercise answers into the reference curriculum.
 
 Every exercise has a sequential chapter-specific ID, a type, explicit
 instructions, an expected outcome, and an immediately adjacent answer cell:
@@ -98,7 +98,7 @@ For open-ended questions, the reference is one justified response, not the
 only acceptable answer. Experimental solutions include runnable example
 investigations and explain how to interpret variable results.
 
-Reference code is read-only displayed text until you deliberately copy it.
+Reference code stays displayed as text until you copy it into a code cell.
 Run All does not execute reference snippets or define solution functions.
 Some snippets build on named earlier solutions in the same chapter; no
 snippet depends on another notebook. Hints and solutions use native HTML
@@ -148,8 +148,9 @@ uv run pytest
 ~~~
 
 Tests validate notebook schemas, chapter structure, exercise IDs, adjacent
-answer cells, collapsed reference blocks, and local notebook links. They allow completed answer cells on
-study branches; they do not grade answers or replace mathematical review.
+answer cells, collapsed reference blocks, and local notebook links. They allow
+completed answer cells on study branches; they do not grade answers or replace
+mathematical review.
 Before sharing a changed demonstration, restart its kernel and run the notebook
 from top to bottom. Review mathematical reasoning and rendered equations as
 well as execution.

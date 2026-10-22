@@ -1,5 +1,6 @@
 """Structural contracts for reference notebooks and completed study branches."""
 import re
+from html.parser import HTMLParser
 from pathlib import Path
 
 import nbformat
@@ -102,6 +103,88 @@ def test_all_exercise_types_are_available(lesson):
         if cell.metadata.get("curriculum", {}).get("role") == "exercise"
     }
     assert kinds == KINDS
+
+
+class DisclosureParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.details = []
+        self.summaries = 0
+        self.closed = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "details":
+            self.details.append(dict(attrs))
+        elif tag == "summary":
+            self.summaries += 1
+
+    def handle_endtag(self, tag):
+        if tag == "details":
+            self.closed += 1
+
+
+def test_answers_have_adjacent_hint_and_solution(lesson):
+    _, notebook = lesson
+    reference_ids = {"hint": [], "solution": []}
+    answer_ids = []
+    for index, cell in enumerate(notebook.cells):
+        metadata = cell.metadata.get("curriculum", {})
+        role = metadata.get("role")
+        if role in reference_ids:
+            reference_ids[role].append(metadata["exercise_id"])
+        if role != "answer":
+            continue
+        exercise_id = metadata["exercise_id"]
+        answer_ids.append(exercise_id)
+        assert index + 2 < len(notebook.cells)
+        for offset, expected_role in ((1, "hint"), (2, "solution")):
+            reference = notebook.cells[index + offset]
+            assert reference.cell_type == "markdown"
+            assert reference.metadata.curriculum.role == expected_role
+            assert reference.metadata.curriculum.exercise_id == exercise_id
+            assert f"reference-{expected_role}" in reference.metadata.get("tags", [])
+    assert reference_ids["hint"] == reference_ids["solution"] == answer_ids
+    assert notebook.metadata.curriculum.format_version == 2
+    assert notebook.metadata.curriculum.reference_solutions == "collapsed-markdown"
+
+
+def test_references_are_closed_disclosures(lesson):
+    _, notebook = lesson
+    for cell in notebook.cells:
+        role = cell.metadata.get("curriculum", {}).get("role")
+        if role not in {"hint", "solution"}:
+            continue
+        parser = DisclosureParser()
+        parser.feed(cell.source)
+        assert len(parser.details) == parser.summaries == parser.closed == 1
+        assert "open" not in parser.details[0]
+        assert cell.source.startswith("<details>\n<summary>")
+        assert cell.source.rstrip().endswith("</details>")
+        assert f"Exercise {cell.metadata.curriculum.exercise_id}" in cell.source
+        expected_label = "Show hint" if role == "hint" else "Show worked solution"
+        assert expected_label in cell.source
+
+
+def test_reference_python_is_displayed_and_compiles(lesson):
+    path, notebook = lesson
+    exercise_kinds = {
+        cell.metadata.curriculum.exercise_id: cell.metadata.curriculum.exercise_type
+        for cell in notebook.cells
+        if cell.metadata.get("curriculum", {}).get("role") == "exercise"
+    }
+    for cell in notebook.cells:
+        role = cell.metadata.get("curriculum", {}).get("role")
+        if role not in {"hint", "solution"}:
+            continue
+        assert cell.cell_type == "markdown"
+        assert "execution_count" not in cell and "outputs" not in cell
+        blocks = re.findall(
+            r"(?ms)^([~\x60]{3})python[ \t]*\n(.*?)^\1[ \t]*$", cell.source
+        )
+        for _, source in blocks:
+            compile(source, f"{path.name}:{cell.id}", "exec")
+        if role == "solution" and exercise_kinds[cell.metadata.curriculum.exercise_id] in {"programming", "experimental"}:
+            assert blocks, f"missing reference code: {cell.id}"
 
 
 def test_all_planned_topics_exist():
