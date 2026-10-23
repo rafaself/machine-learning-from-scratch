@@ -1,5 +1,8 @@
 # Stage 03 publication record
 
+Current coverage: clustering and Gaussian mixtures/EM, with 33 exercises.
+Stage 03 is partial; subsequent units and its capstone remain planned.
+
 ## Clustering — 2026-10-23
 
 Published one chapter with 17 exercises, all six exercise categories, 78 cells,
@@ -89,3 +92,91 @@ notebook bytes.
 
 Existing notebook bytes, dependencies and `main` are preserved. This unit adds
 no framework, external dataset or reusable model implementation to the package.
+
+## Gaussian mixtures and EM — 2026-10-23
+
+Published one chapter with 16 exercises, all six categories, 74 cells, two
+demonstration cells and nine displayed Python reference blocks. Answers remain
+blank with separate adjacent closed hints/solutions. At this publication the
+repository contains 23 published chapter/project notebooks and 353 exercises.
+All 22 preceding notebook byte hashes, including clustering, are preserved.
+PCA/SVD, Bayesian/variational inference, density/anomaly detection and the
+representation-study capstone remain planned; the stage remains partial.
+
+### Mathematical and numerical review
+
+The text distinguishes densities, latent posteriors and point-valued parameters.
+It derives the average likelihood, KL-gap identity, exact/generalized EM ascent
+conditions, weighted ML statistics, fixed covariance-floor update and observed
+NLL derivatives for means, softmax logits and covariance matrix differentials.
+The support qualification for zero auxiliary probabilities is explicit.
+The fixed spectral constraint clips covariance eigenvalues, rather than adding
+jitter or changing the objective mid-run. Monotone likelihood, finite objective
+limits, parameter convergence, global recovery and semantic interpretation are
+kept as separate claims. The hard-assignment limit holds only under declared
+equal-weight/common-isotropic-variance restrictions.
+
+The 54 new independent numerical cases cover one/two-dimensional normalizing
+constants and scalar quadratic forms, extreme log tails, shape/finiteness/SPD
+contracts, strict mixture weights, independent density integration and posterior
+normalization. Scalar entropy/KL calculations verify the bound and zero-support
+cases without reconstructing log posteriors from underflowed probabilities.
+Weighted scalar moments check the ML denominator and row-duplication invariance;
+scalar constrained searches and rotated singular scatter check the covariance
+update and distinguish eigenvalue clipping from added jitter.
+
+Central differences of an independently evaluated scalar mixture likelihood
+verify every mean/logit/covariance parameter at one and four observations,
+including both entries in shared symmetric off-diagonal directions. Fitting
+checks cover the hand update, fixed-floor ascent chain, short-budget and loose
+tolerance semantics, consistent returned posteriors, copied initial state,
+single-component statistics, label permutations and initial feasibility.
+Instrumented starts retain deliberate numerical failures and budget-limited
+fits; all-failed outcomes return their records while malformed inputs still
+raise contract errors. A one-dimensional hard-limit check preserves exact ties.
+
+The selected primary passages in the official Stanford Engineering Everywhere
+mixture notes (pp.2–3) and EM notes (§2, equations (3)–(6)) were inspected.
+The example `(−3,3)` with uniform auxiliary rows verifies a narrow source audit:
+the bound rises from about `−9.91893853` to `−2.51755082`, while observed average
+log likelihood falls from about `−1.61208570` to `−2.51755082`. The missing
+old-model tightness equality explains the failure of the modified ascent claim.
+This does not contradict exact EM, prove a general convergence theorem or
+reproduce another course's assignments.
+
+### Execution, resources and measured results
+
+The full local suite passes **684 checks**: 192 structure, 466 numerical/project,
+three offline-data and 23 isolated demonstration checks. The locked environment
+sync succeeds with unchanged dependencies. CI adds the mixture cases to the
+separate numerical step, without executing or grading learner answers.
+
+A separate authoring audit runs every displayed reference and demonstration in
+chapter order in a fresh kernel. The measured final layout requires 1.269
+seconds / 180.2 MiB sampled aggregate RSS for demonstrations and 1.661 seconds /
+190.6 MiB for the full references. The stage guide records exact settings and
+the approximate driver/kernel-descendant accounting, excluding browser memory.
+These are execution measurements, not study-time estimates or exact physical
+memory peaks.
+
+On the predeclared correlated-mixture sample, selected full/diagonal models
+reach training average log densities `−2.42528958 / −2.79998553` and validation
+scores `−2.51491963 / −2.80177083`. All eight starts stop by their relative-gain
+criterion after 22–35 updates; no global-optimum or universal ranking follows.
+The four tiny floor fits stop after three updates each. Their training scores
+rise as floors shrink, while the fixed stress-probe score becomes very poor.
+That probe is explicitly a stress set, not an IID test sample or final model
+selection result. Every fit and status is reported without fabricated outcomes.
+
+### Rendering and preservation
+
+HTML review verifies all nine sections, 32 initially closed disclosures, one
+default three-panel plot and no MathJax errors. All three actual figures were
+visually inspected. An overlapping colorbar was corrected with constrained
+layout, re-executed and reviewed before publication. Representative JupyterLab
+review checks equations, blank written/code answers, adjacent independent
+disclosures and opening/closing of displayed-code references without execution.
+
+Review copies and reference-run outputs stay outside the canonical repository.
+No earlier notebook, production dependency or package model implementation was
+changed. The branch remains `curriculum-notebooks`; `main` is not merged.

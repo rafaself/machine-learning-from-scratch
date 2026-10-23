@@ -20,7 +20,7 @@ Discover and model structure without confusing a visually persuasive representat
 <!-- availability:start -->
 
 - [clustering](clustering.ipynb): **ready**
-- gaussian mixtures and em: **planned**
+- [gaussian mixtures and em](gaussian-mixtures-and-em.ipynb): **ready**
 - pca and svd: **planned**
 - bayesian and variational inference: **planned**
 - density estimation and anomaly detection: **planned**
@@ -32,10 +32,12 @@ Discover and model structure without confusing a visually persuasive representat
 
 Use manual NumPy objectives, updates and assessment calculations. The published
 clustering chapter specifies initialization, tie rules, empty-cluster policies,
-iteration status, linkage units and partition-metric boundary cases. Later
-mixture units require stable log responsibilities and explicit convergence
-diagnostics. NumPy's SVD/eigensolvers are numerical primitives; PCA preprocessing
-and objectives remain visible.
+iteration status, linkage units and partition-metric boundary cases. The
+mixture calculations use stable log responsibilities, manually derived likelihood
+gradients, a fixed covariance constraint and explicit gain/budget/failure
+diagnostics. The mixture chapter is published; subsequent units remain planned.
+NumPy's SVD/eigensolvers are numerical primitives; PCA preprocessing and
+objectives remain visible.
 
 Every published notebook uses the nine chapter sections, explicit notation,
 worked examples, six exercise types, and dedicated answer cells followed by
@@ -69,6 +71,7 @@ NumPy 2.5.4 and Matplotlib 3.11.2, with BLAS/OpenMP threads set to one:
 | Published unit | Demo seconds / RSS MiB | All displayed references seconds / RSS MiB |
 | --- | --- | --- |
 | Clustering | 1.646 / 180.6 | 2.766 / 198.3 |
+| Gaussian mixtures and EM | 1.269 / 180.2 | 1.661 / 190.6 |
 
 Each phase starts a fresh kernel; time includes startup, plots and shutdown.
 Memory is the approximate 20 ms sampled sum of driver/kernel-descendant RSS,
@@ -89,8 +92,20 @@ their budgets; tests separately retain deliberate unfinished and empty cases.
 The auditable hierarchy is capped at 80 rows, silhouette at 400 rows and
 exponential two-group oracles at ten rows. Query blocks bound distance scratch
 arrays, while returned pairwise matrices still require explicit quadratic
-storage. The default experiments use no GPU and stay far below the 6 GiB
-host-memory limit. Later units remain unmeasured and planned.
+storage.
+
+The mixture comparison uses 180 training and 160 independent validation rows,
+two covariance modes, two components, four starts per mode, variance floor
+0.02, 100 steps and relative gain tolerance 1e-7. All eight runs stop by their
+gain criterion after 22–35 iterations; that flag does not prove parameter
+stationarity or a global optimum. A three-row floor stress study makes four
+separate fixed-floor fits, each stopping after three updates. A two-row
+auxiliary-bound audit uses direct E/M calculations. Generic fitting is capped
+at 2,000 rows, eight components/features, 200 steps and 16 starts. Numerical
+zero-mass/factorization failures are retained rather than silently repaired.
+
+The default experiments use no GPU and stay far below the 6 GiB host-memory
+limit. Later units remain unmeasured and planned.
 
 Use fixed splits/seeds, record objective normalization and model selection,
 and disclose unsuccessful runs. Standard experiments target about 30 minutes;
@@ -117,8 +132,16 @@ the full approximation proof or the paper's original benchmarks.
 supplies an alternative explanation of hierarchical linkage and validation.
 Audit units and objective factors when translating among sources.
 
+The mixture unit studies
+[CS229 mixture notes, pp.2–3](https://see.stanford.edu/materials/aimlcs229/cs229-notes7b.pdf)
+and [EM notes, §2 equations (3)–(6)](https://see.stanford.edu/materials/aimlcs229/cs229-notes8.pdf).
+After implementing posterior normalization and the bound, translate the summed
+likelihood to an average. Reproduce the equality-conditioned ascent chain and
+construct a finite counterexample to an arbitrary loose auxiliary update.
+The local audit does not claim general parameter convergence or latent recovery.
+
 [CS229](https://cs229.stanford.edu/index.html-spr26) supplies scope for the planned
-EM, mixture and PCA units; select their exact primary passages when authored.
+PCA and later inference units; select exact primary passages when authored.
 
 The lessons are original and self-contained. External coursework supplies
 scope and alternative explanations, not copied assignment answers.

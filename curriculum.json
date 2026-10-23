@@ -124,7 +124,7 @@
         },
         {
           "path": "notebooks/03-unsupervised-learning/gaussian-mixtures-and-em.ipynb",
-          "status": "planned"
+          "status": "ready"
         },
         {
           "path": "notebooks/03-unsupervised-learning/pca-and-svd.ipynb",
