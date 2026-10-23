@@ -22,7 +22,7 @@ Compare different inductive biases rather than treating one fitted model as a un
 <!-- availability:start -->
 
 - [probability information and decisions](probability-information-and-decisions.ipynb): **ready**
-- nearest neighbors: **planned**
+- [nearest neighbors](nearest-neighbors.ipynb): **ready**
 - generative classifiers: **planned**
 - decision trees: **planned**
 - tree ensembles: **planned**
@@ -72,11 +72,15 @@ aggregate accounting, not an exact physical-memory peak.
 | Published unit | Demo seconds / RSS MiB | All displayed references seconds / RSS MiB |
 | --- | --- | --- |
 | Probability, information, and decisions | 1.411 / 179.6 | 1.624 / 186.7 |
+| Nearest neighbors | 1.561 / 179.4 | 1.559 / 184.4 |
 
 The reference phase executes demonstrations and all displayed Python in order,
 excluding answer cells. This unit uses small categorical matrices, 32 normal
 observations, and at most 600 Bernoulli observations per illustrated sample.
-No GPU allocation is required. Other Stage 02 units and its capstone remain
+Nearest-neighbor investigations use 80 regression rows and a separate 300-row,
+32-feature classification example, at most 120 validation queries, and default
+32-query/128-training-row search blocks. They do not allocate a full 3D distance
+tensor. No GPU allocation is required. Other Stage 02 units and its capstone remain
 planned and will receive separate measurements before publication.
 
 CPU only. Bound kernel matrices, distance tensors, tree counts, and search grids; report arithmetic/memory differences rather than allocating unbounded all-pairs arrays.
@@ -101,6 +105,11 @@ The first unit's bounded reading is
 with an equation translation and an independently checked counterexample about
 forecast entropy versus correctness. The reading does not require reproducing
 the paper's full communication-theory results.
+
+The nearest-neighbor unit studies
+[Cover and Hart (1967), Section VI](https://isl.stanford.edu/~cover/papers/transIT/0021cove.pdf),
+deriving a conditional binary mismatch calculation and distinguishing its
+large-sample assumptions from a finite experiment.
 
 [CS229](https://cs229.stanford.edu/index.html-spr26) and the original papers or official documentation selected when each unit is authored.
 

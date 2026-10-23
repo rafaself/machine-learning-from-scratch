@@ -1,8 +1,11 @@
 # Stage 02 publication record
 
+Current coverage: two published chapters with 32 exercises. Stage 02 remains
+partial; its five other chapters and integrated capstone are planned.
+
 ## Probability, information, and decisions — 2026-10-23
 
-Published coverage: one chapter, 17 exercises, two demonstration cells, and
+At this unit's publication: one chapter, 17 exercises, two demonstration cells, and
 eight displayed Python reference blocks. Stage 02 is partial; the six algorithm/
 theory units and integrated capstone are still planned. The existing 13 notebooks
 were compared against their byte hashes before this expansion and remain
@@ -38,3 +41,24 @@ uv run --locked --no-sync pytest tests/test_execution.py
 
 These checks establish the stated tested contracts, not a proof for arbitrary
 inputs, a grade for learner work, or completion of the remaining stage.
+
+## Nearest neighbors — 2026-10-23
+
+Added one chapter with 15 exercises, two demonstration cells, and seven
+displayed Python reference blocks. The full local suite passes 279 checks.
+The 17 new numerical cases compare block search with an independent scalar
+distance/sort oracle across k and block sizes; check ties, exact duplicates,
+large-offset distances, empty queries and invalid ranges; verify weighted
+classification/regression; and independently replay class-stratified CV with
+fold-local transforms and pooled validation weighting.
+
+Demonstrations and every displayed reference execute in isolated authoring
+kernels. The reference presets use generated local arrays, direct coordinate
+distance accumulation, and bounded query/training blocks. Measured resource
+accounting is in the stage guide; no dependency or framework was added.
+
+The Cover–Hart paper's Section VI was checked against the authors' archived
+original. Its binary limiting-risk interpretation is explicitly separated from
+finite-sample measured accuracy. Browser/JupyterLab review verifies plots,
+answer cells, and initially closed references. All 13 notebooks present at the
+start of this goal remain byte-identical.

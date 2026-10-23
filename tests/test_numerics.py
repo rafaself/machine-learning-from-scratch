@@ -988,3 +988,153 @@ def test_information_decision_demonstrations_use_declared_population(demonstrati
     assert abs(grid[np.argmin(independent)]-.25) <= np.diff(grid).max()
     np.testing.assert_allclose(values['axes'][1].lines[0].get_ydata(), 3*grid)
     np.testing.assert_allclose(values['axes'][1].lines[1].get_ydata(), 1-grid)
+
+
+@pytest.mark.parametrize('k', [1, 3, 6])
+@pytest.mark.parametrize('query_block,train_block', [(1, 1), (2, 2), (32, 128)])
+def test_neighbor_blocks_match_independent_scalar_sort(k, query_block, train_block):
+    f = reference_functions('nearest-neighbors')
+    train = np.array([[0., 2.], [1., 2.], [1., 2.], [3., 0.], [-1., -2.], [0., 0.]])
+    query = np.array([[1., 2.], [.5, 2.], [1e8, 0.]])
+    originals = train.copy(), query.copy()
+    expected_indices, expected_distances = [], []
+    for row in query:
+        ordered = sorted((sum((float(a)-float(b))**2 for a, b in zip(row, stored)), index) for index, stored in enumerate(train))[:k]
+        expected_indices.append([index for _, index in ordered])
+        expected_distances.append([distance for distance, _ in ordered])
+    indices, distances = f['neighbor_search'](train, query, k, query_block, train_block)
+    np.testing.assert_array_equal(indices, expected_indices)
+    np.testing.assert_allclose(distances, expected_distances, atol=1e-14)
+    np.testing.assert_array_equal(train, originals[0]); np.testing.assert_array_equal(query, originals[1])
+
+
+def test_neighbor_large_offsets_empty_queries_and_range_failure():
+    f = reference_functions('nearest-neighbors')
+    train = np.array([[1e8], [1e8+1], [1e8+2]])
+    indices, squared = f['neighbor_search'](train, [[1e8+.9]], 3)
+    np.testing.assert_array_equal(indices, [[1, 0, 2]])
+    expected = [(float(1e8+.9)-float(train[j, 0]))**2 for j in (1, 0, 2)]
+    np.testing.assert_allclose(squared[0], expected, atol=1e-14)
+    indices, squared = f['neighbor_search'](train, np.empty((0, 1)), 2)
+    assert indices.shape == squared.shape == (0, 2)
+    with pytest.raises(FloatingPointError):
+        f['neighbor_search']([[1e308]], [[-1e308]], 1)
+    for kwargs in ({'k': 0}, {'k': 4}, {'k': True}, {'k': 1, 'train_block': 0}, {'k': 1, 'query_block': 1.5}):
+        with pytest.raises(ValueError):
+            f['neighbor_search'](train, [[0]], **kwargs)
+    with pytest.raises(ValueError):
+        f['neighbor_search'](train, [[np.nan]], 1)
+
+
+def test_neighbor_weight_policies_exact_matches_and_domain():
+    f = reference_functions('nearest-neighbors')
+    np.testing.assert_allclose(f['neighbor_weights']([[1., 1., 9.]], 'distance'), [[3/7, 3/7, 1/7]])
+    np.testing.assert_allclose(f['neighbor_weights']([[1., 1., 9.]]), [[1/3]*3])
+    with np.errstate(divide='raise', invalid='raise'):
+        weights = f['neighbor_weights']([[0., 0., 4.], [0., 4., 9.]], 'distance')
+    np.testing.assert_allclose(weights, [[.5, .5, 0.], [1., 0., 0.]])
+    np.testing.assert_allclose(weights.sum(axis=1), 1)
+    assert f['neighbor_weights'](np.empty((0, 3)), 'distance').shape == (0, 3)
+    for distance in ([[-1., 0.]], [[np.nan, 0.]], np.empty((2, 0))):
+        with pytest.raises(ValueError):
+            f['neighbor_weights'](distance)
+    with pytest.raises(ValueError):
+        f['neighbor_weights']([[1., 2.]], 'squared-inverse')
+
+
+def test_neighbor_classification_regression_and_noncontiguous_classes():
+    f = reference_functions('nearest-neighbors')
+    X = np.array([[0.], [2.], [4.], [6.]])
+    for mode, expected_scores, expected_regression in [('uniform', [1/3, 2/3], 2.), ('distance', [1/7, 6/7], 18/7)]:
+        prediction, scores, classes = f['knn_classify'](X, [0, 1, 1, 0], [[3.]], 3, mode)
+        np.testing.assert_array_equal(prediction, [1]); np.testing.assert_array_equal(classes, [0, 1])
+        np.testing.assert_allclose(scores, [expected_scores])
+        np.testing.assert_allclose(f['knn_regress'](X, [0, 2, 4, 6], [[3.]], 3, mode), [expected_regression])
+    prediction, scores, classes = f['knn_classify']([[0.], [1.], [2.]], [7, 9, -3], [[1.]], 3)
+    np.testing.assert_array_equal(classes, [-3, 7, 9]); np.testing.assert_array_equal(prediction, [-3])
+    np.testing.assert_allclose(scores, [[1/3]*3])
+    np.testing.assert_allclose(f['knn_regress'](X, [0, 2, 4, 6], [[2.]], 3, 'distance'), [2.])
+
+
+def test_conflicting_duplicate_neighbor_policy_and_empty_predictions():
+    f = reference_functions('nearest-neighbors')
+    X, y = np.array([[1.], [1.], [3.]]), np.array([7, -3, 9])
+    prediction, score, classes = f['knn_classify'](X, y, [[1.]], 2, 'distance')
+    np.testing.assert_array_equal(prediction, [-3]); np.testing.assert_allclose(score, [[.5, .5, 0.]])
+    assert f['knn_classify'](X, y, [[1.]], 1, 'distance')[0][0] == 7
+    empty = np.empty((0, 1))
+    prediction, score, classes = f['knn_classify'](X, y, empty, 2)
+    assert prediction.shape == (0,) and score.shape == (0, 3)
+    assert f['knn_regress'](X, y, empty, 2).shape == (0,)
+    with pytest.raises(ValueError):
+        f['knn_classify'](X, y[:, None], [[1.]], 1)
+    with pytest.raises(ValueError):
+        f['knn_classify'](X, y.astype(float), [[1.]], 1)
+    with pytest.raises(ValueError):
+        f['knn_regress'](X, [0, np.nan, 1], [[1.]], 1)
+
+
+def test_neighbor_regression_is_weighted_squared_loss_minimizer():
+    f = reference_functions('nearest-neighbors')
+    X, y, query = np.array([[0.], [2.], [4.], [6.]]), np.array([1., -2., 4., 3.]), np.array([[3.]])
+    prediction = f['knn_regress'](X, y, query, 3, 'distance')[0]
+    # Independent hand-derived neighborhood and inverse Euclidean weights.
+    targets, weights = y[[1, 2, 0]], np.array([3/7, 3/7, 1/7])
+    objective = lambda c: float(np.sum(weights*(targets-c[0])**2))
+    np.testing.assert_allclose(central_difference(objective, [prediction]), [0.], atol=1e-8)
+    assert objective([prediction]) < objective([prediction+.5])
+
+
+def test_neighbor_cv_independent_predictions_pooling_and_fold_local_geometry(monkeypatch):
+    f = reference_functions('nearest-neighbors')
+    X = np.column_stack([np.arange(16, dtype=float), np.sin(np.arange(16)), np.ones(16)])
+    X[-1, 0] = 10000.
+    labels, grid, seed = np.array([2]*7+[5]*5+[-1]*4), [1, 3, 5], 209
+    calls, classify = [], f['knn_classify']
+    def tracked(A, y, B, k, mode='uniform'):
+        calls.append((A.copy(), y.copy(), B.copy(), k))
+        return classify(A, y, B, k, mode)
+    monkeypatch.setitem(f, 'knn_classify', tracked)
+    selected, scores = f['select_knn_k'](X, labels, grid, folds=3, seed=seed)
+    rng = np.random.default_rng(seed)
+    pieces = [np.array_split(rng.permutation(np.flatnonzero(labels == c)), 3) for c in np.unique(labels)]
+    expected, sizes = np.empty((3, 3)), []
+    assert len(calls) == 9
+    for j in range(3):
+        held = np.concatenate([p[j] for p in pieces]); training = np.setdiff1d(np.arange(16), held)
+        sizes.append(len(held))
+        mean, scale = X[training].mean(axis=0), X[training].std(axis=0); scale[scale == 0] = 1.
+        A, B = (X[training]-mean)/scale, (X[held]-mean)/scale
+        for i, k in enumerate(grid):
+            recorded = calls[j*len(grid)+i]
+            np.testing.assert_allclose(recorded[0], A); np.testing.assert_array_equal(recorded[1], labels[training])
+            np.testing.assert_allclose(recorded[2], B); assert recorded[3] == k
+            predictions = []
+            for row in B:
+                nearest = sorted((sum((float(a)-float(b))**2 for a, b in zip(row, stored)), index) for index, stored in enumerate(A))[:k]
+                neighbor_labels = [labels[training[index]] for _, index in nearest]
+                choices = sorted(set(neighbor_labels))
+                predictions.append(min(choices, key=lambda c: (-neighbor_labels.count(c), c)))
+            expected[i, j] = np.mean(np.array(predictions) != labels[held])
+    np.testing.assert_array_equal(scores, expected)
+    assert selected == grid[np.argmin(np.average(expected, axis=1, weights=sizes))]
+
+
+def test_neighbor_cv_candidate_order_and_invalid_configuration():
+    f = reference_functions('nearest-neighbors')
+    X, y = np.arange(9.)[:, None], np.zeros(9, dtype=int)
+    selected, scores = f['select_knn_k'](X, y, [3, 1], folds=3)
+    assert selected == 3 and np.all(scores == 0)
+    for candidates in ([1.], [], [7]):
+        with pytest.raises(ValueError):
+            f['select_knn_k'](X, y, candidates, folds=3)
+    with pytest.raises(ValueError):
+        f['select_knn_k'](X, [0]*7+[1]*2, [1], folds=3)
+
+
+def test_neighbor_geometry_demonstration_uses_uniform_cube_assumption(demonstration_values):
+    values = demonstration_values('nearest-neighbors')
+    dimension, radius = values['demo_dimensions'], values['demo_halfwidth']
+    np.testing.assert_allclose(radius**dimension, .1, rtol=1e-13)
+    assert np.all(np.diff(radius) > 0)
+    np.testing.assert_allclose(.1**(1/np.array([2., 10., 50.])), [.31622776601683794, .7943282347242815, .954992586021436], atol=1e-14)

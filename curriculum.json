@@ -79,7 +79,7 @@
         },
         {
           "path": "notebooks/02-classical-ml/nearest-neighbors.ipynb",
-          "status": "planned"
+          "status": "ready"
         },
         {
           "path": "notebooks/02-classical-ml/generative-classifiers.ipynb",
