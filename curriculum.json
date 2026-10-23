@@ -111,7 +111,7 @@
       "id": "03",
       "title": "Unsupervised and Probabilistic Learning",
       "directory": "notebooks/03-unsupervised-learning",
-      "status": "planned",
+      "status": "partial",
       "prerequisites": [
         "00",
         "01"
@@ -120,7 +120,7 @@
       "chapters": [
         {
           "path": "notebooks/03-unsupervised-learning/clustering.ipynb",
-          "status": "planned"
+          "status": "ready"
         },
         {
           "path": "notebooks/03-unsupervised-learning/gaussian-mixtures-and-em.ipynb",

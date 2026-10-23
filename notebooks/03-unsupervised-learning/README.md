@@ -1,6 +1,6 @@
 # Stage 03 — Unsupervised and Probabilistic Learning
 
-**Availability:** planned. Ready units are linked below; planned units
+**Availability:** partial. Ready units are linked below; planned units
 have no placeholder notebooks. Registry readiness describes published coverage.
 
 ## Goal and prerequisites
@@ -19,7 +19,7 @@ Discover and model structure without confusing a visually persuasive representat
 
 <!-- availability:start -->
 
-- clustering: **planned**
+- [clustering](clustering.ipynb): **ready**
 - gaussian mixtures and em: **planned**
 - pca and svd: **planned**
 - bayesian and variational inference: **planned**
@@ -30,7 +30,12 @@ Discover and model structure without confusing a visually persuasive representat
 
 ## Implementation requirements
 
-Use NumPy with stable log responsibilities and explicit convergence diagnostics. NumPy's SVD/eigensolvers are numerical primitives; PCA preprocessing and objectives remain visible.
+Use manual NumPy objectives, updates and assessment calculations. The published
+clustering chapter specifies initialization, tie rules, empty-cluster policies,
+iteration status, linkage units and partition-metric boundary cases. Later
+mixture units require stable log responsibilities and explicit convergence
+diagnostics. NumPy's SVD/eigensolvers are numerical primitives; PCA preprocessing
+and objectives remain visible.
 
 Every published notebook uses the nine chapter sections, explicit notation,
 worked examples, six exercise types, and dedicated answer cells followed by
@@ -58,6 +63,35 @@ default CI does not execute unfinished learner implementations.
 
 CPU only. Use small dense matrices and bounded pairwise calculations. Large-corpus and distributed clustering are outside the required experiments.
 
+Measured on 2026-10-23 on the Ryzen 7 6800H laptop with Python 3.12.15,
+NumPy 2.5.4 and Matplotlib 3.11.2, with BLAS/OpenMP threads set to one:
+
+| Published unit | Demo seconds / RSS MiB | All displayed references seconds / RSS MiB |
+| --- | --- | --- |
+| Clustering | 1.646 / 180.6 | 2.766 / 198.3 |
+
+Each phase starts a fresh kernel; time includes startup, plots and shutdown.
+Memory is the approximate 20 ms sampled sum of driver/kernel-descendant RSS,
+with shared pages counted per process and browser memory excluded. It is not
+an exact physical-memory peak. The reference phase runs all displayed Python
+and demonstrations in chapter order, excluding learner answers. Default Run
+All runs only demonstrations and leaves the displayed references unexecuted.
+
+Clustering initialization compares two methods, eight starts each, on 180
+training and 120 independent probe rows, three centers and a 100-step budget.
+Fixed component counts are declared; observations are drawn independently
+conditional on those allocations. Geometry/linkage comparisons use 48 rows,
+two preprocessing choices and four linkage methods. The null study uses 160
+training and 120 probe rows, four cluster counts with eight starts each and
+four bootstraps with four starts each. All measured fits stabilize within
+their budgets; tests separately retain deliberate unfinished and empty cases.
+
+The auditable hierarchy is capped at 80 rows, silhouette at 400 rows and
+exponential two-group oracles at ten rows. Query blocks bound distance scratch
+arrays, while returned pairwise matrices still require explicit quadratic
+storage. The default experiments use no GPU and stay far below the 6 GiB
+host-memory limit. Later units remain unmeasured and planned.
+
 Use fixed splits/seeds, record objective normalization and model selection,
 and disclose unsuccessful runs. Standard experiments target about 30 minutes;
 resumable capstones target roughly two hours. Correctness checks stay short.
@@ -73,10 +107,24 @@ planned until its notebook and measurements pass publication gates.
 
 ## Readings
 
-[CS229](https://cs229.stanford.edu/index.html-spr26) for EM, mixtures, and PCA; primary algorithm papers selected with each authored chapter.
+The clustering unit studies
+[Arthur and Vassilvitskii, K-means++, algorithm and Theorem 1.1](https://theory.stanford.edu/~sergei/papers/kMeansPP-soda.pdf).
+After implementing D-squared seeding, translate the potential/expectation
+statement and enumerate a tiny example exactly. The local study distinguishes
+an expectation guarantee from a guarantee for every seed; it does not reproduce
+the full approximation proof or the paper's original benchmarks.
+[Modern Statistics for Modern Biology, §§5.6–5.7](https://web.stanford.edu/class/bios221/book/05-chap.html)
+supplies an alternative explanation of hierarchical linkage and validation.
+Audit units and objective factors when translating among sources.
+
+[CS229](https://cs229.stanford.edu/index.html-spr26) supplies scope for the planned
+EM, mixture and PCA units; select their exact primary passages when authored.
 
 The lessons are original and self-contained. External coursework supplies
 scope and alternative explanations, not copied assignment answers.
+
+See the [Stage 03 publication record](../../docs/stage-03-validation.md) for
+independent numerical, preservation, execution and rendering evidence.
 
 
 [Return to the learning path](../../README.md)

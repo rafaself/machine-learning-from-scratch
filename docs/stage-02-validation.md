@@ -1,8 +1,9 @@
 # Stage 02 publication record
 
 Current coverage: seven published chapters and the integrated capstone, with
-128 exercises. Stage 02 is ready. The full repository contains 21 published
-chapter/project notebooks and 320 exercises; later unfinished units stay planned.
+128 exercises. Stage 02 is ready. At its capstone publication, the repository
+contained 21 published chapter/project notebooks and 320 exercises; later
+unfinished units stayed planned. Subsequent stages have their own records.
 
 ## Probability, information, and decisions — 2026-10-23
 
