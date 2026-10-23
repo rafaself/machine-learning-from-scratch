@@ -1,7 +1,7 @@
 # Stage 02 publication record
 
-Current coverage: four published chapters with 65 exercises. Stage 02 remains
-partial; its three other chapters and integrated capstone are planned.
+Current coverage: five published chapters with 80 exercises. Stage 02 remains
+partial; its two other chapters and integrated capstone are planned.
 
 ## Probability, information, and decisions — 2026-10-23
 
@@ -111,3 +111,29 @@ Structural validation caught an unescaped less-than expression inside a hint
 that confused raw disclosure parsing. It was corrected with LaTeX notation and
 all checks rerun. Browser and JupyterLab inspection verifies the equations,
 both plots, adjacent blank answer cells, and initially closed references.
+
+## Tree ensembles — 2026-10-23
+
+Added one chapter with 15 exercises, two demonstration cells and seven displayed
+Python reference blocks. The full local suite passes 399 checks. The 31 new
+numerical cases check small base learners and global class columns, instrument
+per-node feature draws, independently replay bootstrap streams, reconstruct
+every OOB contributor, verify missing coverage and missing-class bags, compare
+hard/soft voting, independently finite-difference both boosting objectives,
+check score normalization and extreme logits, and verify one-step and multistep
+boosting states against scalar residual means and exhaustive stump costs.
+Analytical variance/coverage and exponential-loss reweighting examples also
+receive independent checks. The original checks remain present.
+
+Demonstrations and all displayed references execute in separate fresh kernels.
+Paired forest experiments use identical bags across feature settings and report
+actual OOB coverage. Bounded boosting experiments print measured selection
+records and plot actual training/validation traces without invented conclusions.
+The stage guide records resources and workload; no dependencies or GPU work
+were added. All 13 starting notebooks remain byte-identical.
+
+The original Breiman source sections were checked for OOB contributor definitions
+and node-level feature sampling. The reading task explicitly distinguishes hard
+votes, soft probabilities, finite coverage, tuning reuse and broader statistical
+claims. Browser/JupyterLab inspection checks equations, plotted analytical
+curves, blank answers and separately collapsed references.

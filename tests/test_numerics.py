@@ -1577,3 +1577,262 @@ def test_tree_demonstration_costs_and_multiclass_risks(demonstration_values):
     assert impurity(labels, 'zero_one') == pytest.approx(.4)
     assert impurity(labels, 'gini') == pytest.approx(.54)
     assert impurity(labels, 'entropy') == pytest.approx(.8979457248567798)
+
+
+@pytest.mark.parametrize('task', ['regression', 'classification'])
+def test_ensemble_base_learner_hand_values_and_global_class_columns(task):
+    f = reference_functions('tree-ensembles')
+    X = np.arange(4.)[:, None]
+    y = [0.,0.,2.,2.] if task == 'regression' else [0,0,2,2]
+    model = f['ensemble_tree'](X, y, task, max_depth=1, min_leaf=1,
+                                n_classes=None if task == 'regression' else 3)
+    assert model['root']['threshold'] == 1.5
+    outputs = f['ensemble_tree_predict'](model, [[1.5], [2.]])
+    if task == 'regression':
+        np.testing.assert_array_equal(outputs, [0.,2.])
+    else:
+        np.testing.assert_array_equal(outputs, [[1,0,0], [0,0,1]])
+    expected = (0,) if task == 'regression' else (0, 3)
+    assert f['ensemble_tree_predict'](model, np.empty((0, 1))).shape == expected
+    with pytest.raises(ValueError):
+        f['ensemble_tree_predict'](model, [[0., 1.]])
+
+
+def test_forest_feature_subsets_are_sampled_at_each_eligible_node():
+    f = reference_functions('tree-ensembles')
+
+    class RecordingGenerator(np.random.Generator):
+        def __init__(self):
+            super().__init__(np.random.PCG64(226))
+            self.chosen = []
+
+        def choice(self, *args, **kwargs):
+            result = super().choice(*args, **kwargs)
+            self.chosen.append(tuple(np.asarray(result).tolist()))
+            return result
+
+    rng = RecordingGenerator()
+    X = np.repeat(np.arange(8.)[:, None], 4, axis=1)
+    tree = f['ensemble_tree'](X, [0.,0.,1.,1.,2.,2.,3.,3.], max_depth=3,
+                               min_leaf=1, max_features=1, rng=rng)
+    assert len(rng.chosen) >= 3
+    assert all(len(group) == 1 for group in rng.chosen)
+    assert len(set(rng.chosen)) > 1
+    assert tree['root']['feature'] == rng.chosen[0][0]
+    with pytest.raises(ValueError):
+        f['ensemble_tree'](X, np.arange(8.), max_features=1)
+
+
+@pytest.mark.parametrize('task', ['regression', 'classification'])
+def test_forest_bootstrap_stream_is_reproducible_and_independent_of_node_draws(task):
+    f = reference_functions('tree-ensembles')
+    X = np.random.default_rng(227).normal(size=(12, 4))
+    y = np.arange(12.) if task == 'regression' else np.array([-7,9,100]*4)
+    bagged = f['fit_forest'](X, y, task, n_trees=5, min_leaf=1, max_features=4, seed=228)
+    sampled = f['fit_forest'](X, y, task, n_trees=5, min_leaf=1, max_features=1, seed=228)
+    duplicate = f['fit_forest'](X, y, task, n_trees=5, min_leaf=1, max_features=1, seed=228)
+    row_seed = np.random.SeedSequence(228).spawn(2)[0]
+    oracle_rng = np.random.default_rng(row_seed)
+    for a, b, c in zip(bagged['bags'], sampled['bags'], duplicate['bags']):
+        np.testing.assert_array_equal(a, b); np.testing.assert_array_equal(b, c)
+        np.testing.assert_array_equal(a, oracle_rng.integers(0, 12, size=12))
+    np.testing.assert_array_equal(f['predict_forest'](sampled, X)[0], f['predict_forest'](duplicate, X)[0])
+    assert any(len(np.unique(bag)) < len(bag) for bag in bagged['bags'])
+
+
+@pytest.mark.parametrize('task', ['regression', 'classification'])
+@pytest.mark.parametrize('voting', ['soft', 'hard'])
+def test_forest_oob_values_match_independent_index_contributor_audit(task, voting):
+    f = reference_functions('tree-ensembles')
+    X = np.array([[0,0], [1,0], [2,1], [3,1], [4,2], [5,2]], dtype=float)
+    y = np.array([0.,1.,2.,4.,2.,0.]) if task == 'regression' else np.array([-7,-7,9,9,100,100])
+    model = f['fit_forest'](X, y, task, n_trees=3, max_depth=2, min_leaf=1, max_features=1, seed=229)
+    values, counts = f['oob_predictions'](model, X, voting)
+    for i in range(len(X)):
+        eligible = [b for b, bag in enumerate(model['bags']) if i not in list(bag)]
+        assert counts[i] == len(eligible)
+        if not eligible:
+            assert np.isnan(values[i]).all()
+            continue
+        outputs = []
+        for b in eligible:
+            node = model['trees'][b]['root']
+            while 'left' in node:
+                node = node['left'] if X[i, node['feature']] <= node['threshold'] else node['right']
+            value = np.array(node['value'], copy=True)
+            if task == 'classification' and voting == 'hard':
+                value = np.eye(3)[int(np.argmax(value))]
+            outputs.append(value)
+        expected = sum(outputs)/len(outputs)
+        np.testing.assert_allclose(values[i], expected)
+    with pytest.raises(ValueError):
+        f['oob_predictions'](model, X[:-1], voting)
+
+
+def test_forest_missing_class_bags_keep_global_labels_and_missing_oob_is_nan():
+    f = reference_functions('tree-ensembles')
+    X, y = np.array([[0.], [1.]]), np.array([-7, 9])
+    model = f['fit_forest'](X, y, 'classification', n_trees=12, min_leaf=1, seed=225)
+    missing = [b for b in model['bags'] if len(np.unique(y[b])) == 1]
+    assert missing
+    np.testing.assert_array_equal(model['classes'], [-7,9])
+    for tree in model['trees']:
+        assert f['ensemble_tree_predict'](tree, X).shape == (2, 2)
+    assert f['predict_forest'](model, np.empty((0, 1)))[1].shape == (0, 2)
+    uncovered = copy.deepcopy(model)
+    uncovered['bags'] = [np.array([0,1]) for _ in model['trees']]
+    values, counts = f['oob_predictions'](uncovered, X)
+    assert np.isnan(values).all() and np.all(counts == 0)
+
+
+def test_forest_hard_and_soft_voting_are_distinct_and_ties_choose_smallest_label():
+    f = reference_functions('tree-ensembles')
+    trees = [dict(task='classification', n_features=1, n_classes=2, root=dict(value=np.array([1-p, p])))
+             for p in (.51, .51, 0.)]
+    model = dict(trees=trees, classes=np.array([-7,9]), task='classification')
+    soft, p = f['predict_forest'](model, [[0.]])
+    hard, votes = f['predict_forest'](model, [[0.]], 'hard')
+    assert soft[0] == -7 and hard[0] == 9
+    np.testing.assert_allclose(p, [[.66,.34]])
+    np.testing.assert_allclose(votes, [[1/3,2/3]])
+    model['trees'] = [trees[0], trees[2]]
+    assert f['predict_forest'](model, [[0.]], 'hard')[0][0] == -7
+    with pytest.raises(ValueError):
+        f['predict_forest'](model, [[0.]], 'unrecognized')
+
+
+@pytest.mark.parametrize('loss', ['squared', 'logistic'])
+@pytest.mark.parametrize('n', [1, 5])
+def test_boosting_gradients_against_independent_mean_objective(loss, n):
+    evaluate = reference_functions('tree-ensembles')['boost_objective']
+    y = np.linspace(-.3, 1.2, n) if loss == 'squared' else (np.arange(n) % 2).astype(float)
+    scores = np.linspace(-.7, 1.1, n)
+
+    def independent(candidate):
+        if loss == 'squared':
+            return sum((float(a)-float(b))**2/2 for a, b in zip(y, candidate))/n
+        return sum(math.log1p(math.exp(-float(s) if label else float(s)))
+                   for label, s in zip(y, candidate))/n
+
+    value, residual = evaluate(y, scores, loss)
+    assert value == pytest.approx(independent(scores))
+    np.testing.assert_allclose(-residual/n, central_difference(independent, scores), rtol=1e-5, atol=1e-9)
+    repeated_value, repeated_residual = evaluate(np.repeat(y, 3), np.repeat(scores, 3), loss)
+    assert repeated_value == pytest.approx(value)
+    np.testing.assert_allclose(repeated_residual, np.repeat(residual, 3))
+
+
+def test_logistic_boost_objective_extreme_logits_and_directional_derivative():
+    evaluate = reference_functions('tree-ensembles')['boost_objective']
+    value, residual = evaluate([0,1,0,1], [1000.,-1000.,-1000.,1000.], 'logistic')
+    assert value == 500.
+    np.testing.assert_array_equal(residual, [-1,1,0,0])
+    value, residual = evaluate([0,1], [0.,0.], 'logistic')
+    assert value == pytest.approx(math.log(2))
+    gradient = -residual/2
+    np.testing.assert_array_equal(gradient, [.25,-.25])
+    h, step = np.array([-1.,1.]), 1e-5
+    independent = lambda score: (math.log1p(math.exp(score[0]))+math.log1p(math.exp(-score[1])))/2
+    derivative = (independent(step*h)-independent(-step*h))/(2*step)
+    assert derivative == pytest.approx(-.5, abs=1e-9)
+    assert gradient @ h == -.5
+
+
+@pytest.mark.parametrize('loss', ['squared', 'logistic'])
+def test_gradient_boosting_one_step_against_hand_states(loss):
+    f = reference_functions('tree-ensembles')
+    X = np.arange(4.)[:, None]
+    y, rate = ([0.,0.,2.,2.], .5) if loss == 'squared' else ([0,0,1,1], 1.)
+    model = f['fit_gradient_boost'](X, y, loss, n_stages=1, learning_rate=rate, max_depth=1, min_leaf=1)
+    scores = f['staged_boost_scores'](model, X)
+    if loss == 'squared':
+        np.testing.assert_allclose(scores, [[1.,.5], [1.,.5], [1.,1.5], [1.,1.5]])
+        np.testing.assert_allclose(model['training_loss'], [.5,.125])
+    else:
+        np.testing.assert_allclose(scores, [[0.,-.5], [0.,-.5], [0.,.5], [0.,.5]])
+        np.testing.assert_allclose(model['training_loss'], [math.log(2), math.log1p(math.exp(-.5))])
+    assert all(tree['task'] == 'regression' for tree in model['trees'])
+    assert f['staged_boost_scores'](model, np.empty((0, 1))).shape == (0, 2)
+
+
+@pytest.mark.parametrize('loss', ['squared', 'logistic'])
+def test_boosting_stump_trace_against_independent_residual_means_and_candidate_costs(loss):
+    f = reference_functions('tree-ensembles')
+    X = np.arange(6.)[:, None]
+    y = np.array([0.,0.,2.,1.,3.,3.]) if loss == 'squared' else np.array([0,0,1,0,1,1])
+    rate = .3
+    model = f['fit_gradient_boost'](X, y, loss, n_stages=3, learning_rate=rate, max_depth=1, min_leaf=1)
+    actual = f['staged_boost_scores'](model, X)
+    initial = y.mean() if loss == 'squared' else math.log(y.mean()/(1-y.mean()))
+    expected = np.full(len(y), initial)
+    np.testing.assert_allclose(actual[:, 0], expected)
+    for m, tree in enumerate(model['trees'], start=1):
+        residual = y-expected if loss == 'squared' else np.array([label-1/(1+math.exp(-score)) for label, score in zip(y, expected)])
+        costs = []
+        for threshold in np.arange(.5, 5.5):
+            left = X[:, 0] <= threshold
+            guess = np.where(left, residual[left].mean(), residual[~left].mean())
+            costs.append(sum((float(a)-float(b))**2 for a,b in zip(residual, guess))/len(y))
+        root = tree['root']
+        if 'left' in root:
+            left = X[:, 0] <= root['threshold']
+            direction = np.where(left, residual[left].mean(), residual[~left].mean())
+            np.testing.assert_allclose(root['left']['value'], residual[left].mean())
+            np.testing.assert_allclose(root['right']['value'], residual[~left].mean())
+            assert np.mean((residual-direction)**2) == pytest.approx(min(costs), abs=1e-14)
+        else:
+            direction = np.full(len(y), residual.mean())
+        expected += rate*direction
+        np.testing.assert_allclose(actual[:, m], expected, atol=1e-14)
+        if loss == 'squared':
+            objective = sum((float(a)-float(b))**2/2 for a,b in zip(y, expected))/len(y)
+        else:
+            objective = sum(math.log1p(math.exp(-float(s) if label else float(s))) for label,s in zip(y,expected))/len(y)
+        assert model['training_loss'][m] == pytest.approx(objective)
+
+
+@pytest.mark.parametrize('kwargs', [dict(n_stages=0), dict(n_stages=65), dict(n_stages=True),
+                                   dict(learning_rate=0.), dict(learning_rate=1.1),
+                                   dict(learning_rate=np.nan), dict(max_depth=17), dict(min_leaf=0)])
+def test_boosting_rejects_invalid_work_controls(kwargs):
+    with pytest.raises(ValueError):
+        reference_functions('tree-ensembles')['fit_gradient_boost']([[0.], [1.]], [0.,1.], **kwargs)
+
+
+def test_ensemble_fitting_rejects_invalid_labels_and_limits():
+    f = reference_functions('tree-ensembles')
+    for count in (0,65,True):
+        with pytest.raises(ValueError):
+            f['fit_forest']([[0.], [1.]], [0.,1.], n_trees=count)
+    with pytest.raises(ValueError):
+        f['fit_forest']([[0.], [1.]], [0.,1.], 'classification')
+    with pytest.raises(ValueError):
+        f['fit_gradient_boost']([[0.], [1.]], [1,1], 'logistic')
+    with pytest.raises(ValueError):
+        f['fit_gradient_boost']([[0.], [1.]], [0,2], 'logistic')
+    with pytest.raises(ValueError):
+        f['boost_objective']([0,2], [0.,0.], 'logistic')
+
+
+def test_ensemble_analytical_demo_variance_and_oob_formula(demonstration_values):
+    values = demonstration_values('tree-ensembles')
+    B = values['demo_trees']
+    for rho, variance in values['demo_variance'].items():
+        np.testing.assert_allclose(variance, (B*4+B*(B-1)*rho*4)/B**2)
+        assert variance[4] == pytest.approx(4*(rho+(1-rho)/5))
+    q = (79/80)**80
+    assert values['demo_absent'] == pytest.approx(q)
+    np.testing.assert_allclose(values['demo_coverage'], 1-(1-q)**B)
+    assert 4*(.25+.75/5) == pytest.approx(1.6)
+    assert 4*(1-(3/4)**4) == 175/64
+    assert (175/256)**3 == pytest.approx(.31944364309310913)
+
+
+def test_exponential_loss_stage_against_independent_derivative_and_reweighting():
+    error = .25
+    beta = .5*math.log((1-error)/error)
+    objective = lambda b: (1-error)*math.exp(-float(b[0]))+error*math.exp(float(b[0]))
+    assert beta == pytest.approx(.5*math.log(3))
+    assert objective([beta]) == pytest.approx(math.sqrt(3)/2)
+    assert error*math.exp(beta)/objective([beta]) == pytest.approx(.5)
+    np.testing.assert_allclose(central_difference(objective, [beta]), [0.], atol=1e-9)

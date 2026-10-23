@@ -25,7 +25,7 @@ Compare different inductive biases rather than treating one fitted model as a un
 - [nearest neighbors](nearest-neighbors.ipynb): **ready**
 - [generative classifiers](generative-classifiers.ipynb): **ready**
 - [decision trees](decision-trees.ipynb): **ready**
-- tree ensembles: **planned**
+- [tree ensembles](tree-ensembles.ipynb): **ready**
 - support vector machines and kernels: **planned**
 - statistical learning theory: **planned**
 - classical benchmark: **planned**
@@ -75,6 +75,7 @@ aggregate accounting, not an exact physical-memory peak.
 | Nearest neighbors | 1.561 / 179.4 | 1.559 / 184.4 |
 | Generative classifiers | 1.563 / 179.9 | 1.527 / 183.7 |
 | Decision trees | 1.250 / 178.6 | 1.408 / 182.0 |
+| Tree ensembles | 1.851 / 179.5 | 2.603 / 186.2 |
 
 The reference phase executes demonstrations and all displayed Python in order,
 excluding answer cells. This unit uses small categorical matrices, 32 normal
@@ -89,6 +90,10 @@ Tree comparisons use 120 training and 160 validation rows in two dimensions,
 three depth limits and four pruning penalties over three seeds. A separate
 80-row classification example checks four one-label perturbations against a
 fixed 400-row probe set. Growth is bounded to depth six or four respectively.
+Ensemble comparisons use 100 training and 160 validation rows in four dimensions,
+12 depth-four trees, two candidate-feature settings and three seeds. Boosting
+uses 120/160 rows in three dimensions, 12 depth-two stages and two declared losses.
+Out-of-bag contributor indices are retained and uncovered rows are reported.
 No GPU allocation is required. Other Stage 02 units and its capstone remain
 planned and will receive separate measurements before publication.
 
@@ -129,6 +134,11 @@ The tree unit audits
 [CS229 Decision Trees, §§1.2–1.5](https://cs229.stanford.edu/summer2023/cs229-notes-decision_trees.pdf),
 checking weighted gain and refining monotone-transform invariance with an exact
 midpoint-threshold counterexample.
+
+The ensemble unit studies
+[Breiman (2001), §§3.1 and 4](https://www.stat.berkeley.edu/~breiman/randomforest2001.pdf)
+for OOB contributors and node-level feature sampling, with an explicit hard/soft
+voting distinction and limits on internal-validation claims.
 
 [CS229](https://cs229.stanford.edu/index.html-spr26) and the original papers or official documentation selected when each unit is authored.
 
