@@ -1,6 +1,6 @@
 # Stage 02 — Classical Machine Learning
 
-**Availability:** planned. Ready units are linked below; planned units
+**Availability:** partial. Ready units are linked below; planned units
 have no placeholder notebooks. Registry readiness describes published coverage.
 
 ## Goal and prerequisites
@@ -21,7 +21,7 @@ Compare different inductive biases rather than treating one fitted model as a un
 
 <!-- availability:start -->
 
-- probability information and decisions: **planned**
+- [probability information and decisions](probability-information-and-decisions.ipynb): **ready**
 - nearest neighbors: **planned**
 - generative classifiers: **planned**
 - decision trees: **planned**
@@ -60,6 +60,25 @@ default CI does not execute unfinished learner implementations.
 
 ## Compute and reproducibility
 
+### Published-unit measurements
+
+Measured on 2026-10-23 using the Ryzen 7 6800H, Python 3.12.15,
+NumPy 2.5.4, Matplotlib 3.11.2, CPU only, and one OpenBLAS/OpenMP thread.
+Each phase starts a fresh kernel. Time includes startup, plotting, and shutdown.
+Memory is the 20 ms sampled sum of driver/kernel-descendant RSS, including
+shared pages counted per process and excluding browser memory. It is approximate
+aggregate accounting, not an exact physical-memory peak.
+
+| Published unit | Demo seconds / RSS MiB | All displayed references seconds / RSS MiB |
+| --- | --- | --- |
+| Probability, information, and decisions | 1.411 / 179.6 | 1.624 / 186.7 |
+
+The reference phase executes demonstrations and all displayed Python in order,
+excluding answer cells. This unit uses small categorical matrices, 32 normal
+observations, and at most 600 Bernoulli observations per illustrated sample.
+No GPU allocation is required. Other Stage 02 units and its capstone remain
+planned and will receive separate measurements before publication.
+
 CPU only. Bound kernel matrices, distance tensors, tree counts, and search grids; report arithmetic/memory differences rather than allocating unbounded all-pairs arrays.
 
 Use fixed splits/seeds, record objective normalization and model selection,
@@ -76,6 +95,12 @@ independent check, and a claim the local experiment can support. See the
 planned until its notebook and measurements pass publication gates.
 
 ## Readings
+
+The first unit's bounded reading is
+[Shannon (1948), Part I §6](https://people.math.harvard.edu/~ctm/home/text/others/shannon/entropy/entropy.pdf),
+with an equation translation and an independently checked counterexample about
+forecast entropy versus correctness. The reading does not require reproducing
+the paper's full communication-theory results.
 
 [CS229](https://cs229.stanford.edu/index.html-spr26) and the original papers or official documentation selected when each unit is authored.
 

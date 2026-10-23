@@ -816,3 +816,175 @@ def test_new_visualizations_match_regularized_stationarity_and_roc_area(demonstr
     values = demonstration_values('evaluation-and-model-selection')
     curve = values['axes'][1].lines[0]
     assert np.trapezoid(curve.get_ydata(), curve.get_xdata()) == .75
+
+
+def test_information_losses_hand_values_support_and_domain():
+    f = reference_functions('probability-information-and-decisions')
+    with np.errstate(divide='raise', invalid='raise'):
+        entropy, cross, divergence = f['information_losses']([.25, .75], [.5, .5])
+        np.testing.assert_allclose([entropy, cross, divergence], [.5623351446188083, .6931471805599453, .13081203594113697], atol=1e-14)
+        assert entropy / np.log(2) == pytest.approx(.8112781244591328)
+        np.testing.assert_array_equal(f['information_losses']([1., 0.], [1., 0.]), [0., 0., 0.])
+        result = f['information_losses']([0., 1.], [1., 0.])
+        assert result[0] == 0 and np.isinf(result[1:]).all()
+    for p, q in [([.2, .2], [.5, .5]), ([-.1, 1.1], [.5, .5]), ([np.nan, 0], [.5, .5]), ([1.], [.5, .5])]:
+        with pytest.raises(ValueError):
+            f['information_losses'](p, q)
+
+
+@pytest.mark.parametrize('categories', [2, 3, 7])
+def test_information_identity_nonnegativity_and_permutation(categories):
+    import math
+    f = reference_functions('probability-information-and-decisions')
+    rng = np.random.default_rng(601)
+    p, q = rng.dirichlet(np.ones(categories), size=2)
+    h, cross, divergence = f['information_losses'](p, q)
+    independent = sum(float(a)*math.log(float(a)/float(b)) for a, b in zip(p, q))
+    assert divergence == pytest.approx(independent, abs=1e-14) and divergence >= -1e-14
+    assert cross == pytest.approx(h + divergence, abs=1e-14)
+    assert h <= np.log(categories) + 1e-14
+    order = rng.permutation(categories)
+    np.testing.assert_allclose(f['information_losses'](p[order], q[order]), [h, cross, divergence], atol=1e-14)
+
+
+def test_joint_information_independent_deterministic_and_zero_categories():
+    f = reference_functions('probability-information-and-decisions')
+    np.testing.assert_allclose(f['joint_information']([[.5, 0], [0, .5]]), [np.log(2)]*4)
+    np.testing.assert_allclose(f['joint_information'](np.full((2, 2), .25)), [np.log(2), np.log(2), np.log(4), 0], atol=1e-14)
+    joint = np.outer([.3, .7, 0.], [.1, .4, .5])
+    hx, hy, hxy, mutual = f['joint_information'](joint)
+    assert mutual == pytest.approx(0, abs=1e-14)
+    assert hx + hy - hxy == pytest.approx(mutual, abs=1e-14)
+    # The product of the two tiny marginals would underflow; log marginals do not.
+    with np.errstate(divide='raise', invalid='raise'):
+        values = f['joint_information']([[1e-200, 0], [0, 1.]])
+    assert np.isfinite(values).all() and values[3] > 0
+    with pytest.raises(ValueError):
+        f['joint_information']([[.2, .2]])
+
+
+@pytest.mark.parametrize('n,categories', [(1, 2), (1, 4), (5, 3)])
+def test_categorical_logit_gradients_against_scalar_objective(n, categories):
+    f = reference_functions('probability-information-and-decisions')
+    logits = np.linspace(-.7, .9, n*categories).reshape(n, categories)
+    labels = np.arange(n) % categories
+    before = logits.copy()
+    def independent(candidate):
+        return sum(np.log(sum(np.exp(float(v)) for v in row))-row[target] for row, target in zip(candidate, labels)) / n
+    loss, probability, gradient = f['categorical_nll'](logits, labels)
+    assert loss == pytest.approx(independent(logits), abs=1e-12)
+    np.testing.assert_allclose(gradient, central_difference(independent, logits), rtol=1e-6, atol=1e-8)
+    np.testing.assert_allclose(gradient.sum(axis=1), 0, atol=1e-15)
+    np.testing.assert_allclose(probability.sum(axis=1), 1, atol=1e-15)
+    shifted = f['categorical_nll'](logits+1000, labels)
+    assert shifted[0] == pytest.approx(loss, abs=1e-12)
+    np.testing.assert_allclose(shifted[1], probability, atol=1e-13)
+    np.testing.assert_array_equal(logits, before)
+
+
+def test_categorical_extremes_shapes_and_labels():
+    f = reference_functions('probability-information-and-decisions')
+    with np.errstate(over='raise', divide='raise', invalid='raise'):
+        loss, p, gradient = f['categorical_nll']([[1000., -1000.]], [1])
+    assert loss == 2000
+    np.testing.assert_array_equal(p, [[1., 0.]])
+    np.testing.assert_array_equal(gradient, [[1., -1.]])
+    for labels in ([1.], [[1]], [2], [-1]):
+        with pytest.raises(ValueError):
+            f['categorical_nll']([[1., 2.]], labels)
+    with pytest.raises(ValueError):
+        f['categorical_nll']([[np.nan, 0]], [0])
+    with pytest.raises(FloatingPointError):
+        f['categorical_nll']([[1e308, -1e308]], [1])
+
+
+@pytest.mark.parametrize('n', [1, 4])
+@pytest.mark.parametrize('penalty', [0., .13])
+def test_categorical_affine_all_parameters_and_mean_penalty_scaling(n, penalty):
+    f = reference_functions('probability-information-and-decisions')
+    X = np.linspace(-.6, .8, n*2).reshape(n, 2)
+    labels = np.arange(n) % 3
+    W, b = np.linspace(-.3, .4, 6).reshape(2, 3), np.array([.1, -.2, .3])
+    W_before, b_before = W.copy(), b.copy()
+    def independent(weight, bias):
+        z = X @ weight + bias
+        data = sum(np.log(sum(np.exp(float(v)) for v in row))-row[target] for row, target in zip(z, labels)) / n
+        return data + penalty * sum(float(v)**2 for v in weight.ravel()) / 2
+    loss, dw, db = f['categorical_affine_loss'](X, labels, W, b, penalty)
+    assert loss == pytest.approx(independent(W, b))
+    np.testing.assert_allclose(dw, central_difference(lambda v: independent(v, b), W), rtol=1e-6, atol=1e-8)
+    np.testing.assert_allclose(db, central_difference(lambda v: independent(W, v), b), rtol=1e-6, atol=1e-8)
+    duplicated = f['categorical_affine_loss'](np.tile(X, (2, 1)), np.tile(labels, 2), W, b, penalty)
+    for actual, expected in zip(duplicated, (loss, dw, db)):
+        np.testing.assert_allclose(actual, expected, atol=1e-14)
+    np.testing.assert_array_equal(W, W_before); np.testing.assert_array_equal(b, b_before)
+    with pytest.raises(ValueError):
+        f['categorical_affine_loss'](X, labels, W, b[:, None], penalty)
+
+
+def test_categorical_curvature_variance_nullspace_and_jacobian():
+    f = reference_functions('probability-information-and-decisions')
+    point = np.array([.2, -.5, .7])
+    _, p, _ = f['categorical_nll'](point[None, :], [1]); p = p[0]
+    hessian = np.diag(p) - np.outer(p, p)
+    def probability(candidate):
+        e = np.exp(candidate)
+        return e/e.sum()
+    numeric = np.column_stack([central_difference(lambda v: probability(v)[j], point) for j in range(3)]).T
+    np.testing.assert_allclose(hessian, numeric, atol=1e-10)
+    np.testing.assert_allclose(hessian @ np.ones(3), 0, atol=1e-15)
+    assert np.linalg.eigvalsh(hessian).min() >= -1e-14
+    direction = np.array([1., -2., .5])
+    assert direction @ hessian @ direction == pytest.approx(p @ direction**2 - (p @ direction)**2)
+
+
+def test_bayes_actions_costs_abstention_and_ties():
+    f = reference_functions('probability-information-and-decisions')
+    posterior = np.array([[.8, .2], [.6, .4], [.75, .25]])
+    action, risk = f['bayes_actions'](posterior, [[0., 3.], [1., 0.]])
+    np.testing.assert_array_equal(action, [0, 1, 0])
+    np.testing.assert_allclose(risk, [[.6, .8], [1.2, .6], [.75, .75]])
+    abstain, risk = f['bayes_actions']([[.5, .5]], [[0, 1], [1, 0], [.3, .3]])
+    np.testing.assert_array_equal(abstain, [2]); np.testing.assert_allclose(risk, [[.5, .5, .3]])
+    with pytest.raises(ValueError):
+        f['bayes_actions']([[.2, .2]], [[0, 1]])
+    with pytest.raises(ValueError):
+        f['bayes_actions']([[.5, .5]], [[-1, 0]])
+
+
+@pytest.mark.parametrize('n,noise,prior', [(1, 1., 1.), (5, .7, 2.), (20, 2., .25)])
+def test_conjugate_normal_posterior_matches_completed_square_and_mode(n, noise, prior):
+    f = reference_functions('probability-information-and-decisions')
+    x, m0 = np.linspace(-.2, 1.1, n), .3
+    mean, variance, predictive = f['normal_mean_posterior'](x, noise, m0, prior)
+    expected_variance = noise*prior/(noise+n*prior)
+    expected_mean = (noise*m0+prior*x.sum())/(noise+n*prior)
+    np.testing.assert_allclose([mean, variance, predictive], [expected_mean, expected_variance, noise+expected_variance])
+    objective = lambda value: sum((float(v)-value[0])**2 for v in x)/(2*noise)+(value[0]-m0)**2/(2*prior)
+    np.testing.assert_allclose(central_difference(objective, [mean]), [0], atol=1e-8)
+    assert variance < prior and predictive > noise
+    np.testing.assert_allclose(f['normal_mean_posterior']([1., 3.], 1.), [4/3, 1/3, 4/3])
+
+
+def test_map_to_mean_ridge_relationship_and_fixed_intercept():
+    f = reference_functions('regularization-and-generalization')
+    X, y, w, bias = np.array([[1., 2.], [-.5, .3], [.2, -.4]]), np.array([.4, -.2, .1]), np.array([.3, -.1]), .2
+    noise, prior = 1.7, .9
+    penalty = noise/(len(X)*prior)
+    loss, dw, _ = f['ridge_loss_gradient'](X, y, w, bias, penalty)
+    def independent(candidate):
+        residual = X @ candidate + bias-y
+        return float(residual @ residual/(2*noise)+candidate @ candidate/(2*prior))
+    scale = noise/len(X)
+    assert loss == pytest.approx(scale*independent(w))
+    np.testing.assert_allclose(dw, scale*central_difference(independent, w), atol=1e-8)
+
+
+def test_information_decision_demonstrations_use_declared_population(demonstration_values):
+    values = demonstration_values('probability-information-and-decisions')
+    grid = values['forecast']
+    independent = -.25*np.log(grid)-.75*np.log1p(-grid)
+    np.testing.assert_allclose(values['expected_logloss'], independent)
+    assert abs(grid[np.argmin(independent)]-.25) <= np.diff(grid).max()
+    np.testing.assert_allclose(values['axes'][1].lines[0].get_ydata(), 3*grid)
+    np.testing.assert_allclose(values['axes'][1].lines[1].get_ydata(), 1-grid)

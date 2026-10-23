@@ -67,7 +67,7 @@
       "id": "02",
       "title": "Classical Machine Learning",
       "directory": "notebooks/02-classical-ml",
-      "status": "planned",
+      "status": "partial",
       "prerequisites": [
         "01"
       ],
@@ -75,7 +75,7 @@
       "chapters": [
         {
           "path": "notebooks/02-classical-ml/probability-information-and-decisions.ipynb",
-          "status": "planned"
+          "status": "ready"
         },
         {
           "path": "notebooks/02-classical-ml/nearest-neighbors.ipynb",
