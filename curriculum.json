@@ -99,7 +99,7 @@
         },
         {
           "path": "notebooks/02-classical-ml/statistical-learning-theory.ipynb",
-          "status": "planned"
+          "status": "ready"
         }
       ],
       "capstone": {

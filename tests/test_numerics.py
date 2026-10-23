@@ -3,6 +3,7 @@
 import ast
 import copy
 import math
+from itertools import product
 import re
 from functools import lru_cache
 
@@ -2041,3 +2042,147 @@ def test_svm_demo_hinge_upper_bound_and_analytic_geometry(demonstration_values):
     assert np.all(values['demo_hinge'] >= values['demo_zero_one'])
     assert np.dot([3,4],[1,1])-1 == 6
     assert 6/np.linalg.norm([3,4]) == 12/np.linalg.norm([6,8])
+
+
+@pytest.mark.parametrize('n', [20, 200])
+@pytest.mark.parametrize('M', [1, 20])
+@pytest.mark.parametrize('delta', [.05, .1])
+def test_finite_class_radius_against_independent_probability_bound(n, M, delta):
+    f = reference_functions('statistical-learning-theory')
+    radius = f['finite_class_radius'](n, M, delta)
+    expected = math.sqrt(math.log(2*M/delta)/(2*n))
+    assert radius == pytest.approx(expected)
+    assert 2*M*math.exp(-2*n*radius**2) == pytest.approx(delta)
+    assert f['finite_class_radius'](4*n,M,delta) == pytest.approx(radius/2)
+    assert f['finite_class_radius'](n,2*M,delta) > radius
+    assert f['finite_class_radius'](n,M,delta/2) > radius
+
+
+def test_finite_class_sample_count_ceiling_huge_family_and_vacuity():
+    f = reference_functions('statistical-learning-theory')
+    assert f['finite_class_sample_size'](.05,20,.05) == 1337
+    assert f['finite_class_radius'](1337,20,.05) <= .05
+    assert f['finite_class_radius'](1336,20,.05) > .05
+    assert f['finite_class_radius'](200,20,.05) == pytest.approx(.12927308041185456)
+    assert f['finite_class_radius'](200,1,.05) == pytest.approx(.09603227913199208)
+    huge = f['finite_class_radius'](1,10**1000,.05)
+    assert math.isfinite(huge) and huge > 1.
+    with pytest.raises(FloatingPointError):
+        f['finite_class_sample_size'](1e-300,20,.05)
+
+
+@pytest.mark.parametrize('n,M,delta', [(0,1,.1),(True,1,.1),(1,0,.1),(1,True,.1),
+                                     (1,1,0.),(1,1,1.),(1,1,np.nan),(1.5,2,.1)])
+def test_finite_class_calculator_rejects_invalid_inputs(n, M, delta):
+    with pytest.raises(ValueError):
+        reference_functions('statistical-learning-theory')['finite_class_radius'](n,M,delta)
+
+
+def test_binomial_deviation_matches_exact_rational_count_sums():
+    probability = reference_functions('statistical-learning-theory')['binomial_deviation_probability']
+    assert probability(4,.5,.25) == .125
+    assert probability(4,.5,0.) == .625
+    assert probability(20,.5,.3) == pytest.approx(2702/2**20)
+    assert probability(8,.25,.25) == pytest.approx(1789/4**8)
+    for n, p, epsilon in ((4,.5,.25),(20,.5,.3),(8,.25,.25)):
+        assert probability(n,p,epsilon) <= min(1.,2*math.exp(-2*n*epsilon**2))
+    assert min(1.,2*math.exp(-2*4*.25**2)) == 1.
+
+
+@pytest.mark.parametrize('n', [1, 4, 20])
+@pytest.mark.parametrize('p', [0., 1.])
+def test_binomial_deterministic_endpoints_have_no_deviation(n, p):
+    probability = reference_functions('statistical-learning-theory')['binomial_deviation_probability']
+    assert probability(n,p,0.) == 0.
+    assert probability(n,p,1.) == 0.
+
+
+@pytest.mark.parametrize('n,p,epsilon', [(0,.5,.1),(201,.5,.1),(True,.5,.1),
+                                       (4,-.1,.1),(4,np.nan,.1),(4,.5,-.1),(4,.5,1.1)])
+def test_binomial_deviation_rejects_invalid_domain(n, p, epsilon):
+    with pytest.raises(ValueError):
+        reference_functions('statistical-learning-theory')['binomial_deviation_probability'](n,p,epsilon)
+
+
+@pytest.mark.parametrize('m', [1, 2, 3, 6])
+def test_capacity_patterns_match_independent_ordered_block_enumeration(m):
+    f = reference_functions('statistical-learning-theory')
+    points = np.arange(m, dtype=float)
+    threshold = {tuple(row) for row in f['threshold_patterns'](points)}
+    interval = {tuple(row) for row in f['interval_patterns'](points)}
+    expected_threshold = {tuple(int(i >= cut) for i in range(m)) for cut in range(m+1)}
+    expected_interval = {tuple(0 for _ in range(m))}
+    expected_interval.update(tuple(int(left <= i <= right) for i in range(m))
+                             for left in range(m) for right in range(left,m))
+    assert threshold == expected_threshold and len(threshold) == m+1
+    assert interval == expected_interval and len(interval) == 1+m*(m+1)//2
+
+
+def test_capacity_shattering_counterexamples_duplicates_and_column_order():
+    f = reference_functions('statistical-learning-theory')
+    assert {tuple(r) for r in f['threshold_patterns']([0.])} == {(0,),(1,)}
+    assert (1,0) not in {tuple(r) for r in f['threshold_patterns']([0.,1.])}
+    assert {tuple(r) for r in f['interval_patterns']([0.,1.])} == set(product((0,1),repeat=2))
+    assert (1,0,1) not in {tuple(r) for r in f['interval_patterns']([0.,1.,2.])}
+    points = [2.,0.,2.,1.]
+    for name in ('threshold_patterns','interval_patterns'):
+        patterns = f[name](points)
+        np.testing.assert_array_equal(patterns[:,0], patterns[:,2])
+        sorted_patterns = {tuple(row) for row in f[name]([0.,1.,2.])}
+        assert {tuple(row[[1,3,0]]) for row in patterns} == sorted_patterns
+    with pytest.raises(ValueError):
+        f['threshold_patterns']([])
+    with pytest.raises(ValueError):
+        f['interval_patterns'](np.arange(65.))
+
+
+def test_fixed_hypothesis_selection_matches_scalar_errors_and_first_tie():
+    select = reference_functions('statistical-learning-theory')['select_fixed_hypothesis']
+    table = np.array([[0,0,1,1],[0,1,1,0],[1,1,0,0]])
+    labels = [0,1,1,1]
+    selected, errors = select(table, labels)
+    expected = [sum(int(a != b) for a,b in zip(row,labels))/len(labels) for row in table]
+    np.testing.assert_allclose(errors, expected)
+    assert selected == 0 and expected[0] == expected[1]
+    with pytest.raises(ValueError):
+        select([[0,2]], [0,1])
+    with pytest.raises(ValueError):
+        select([[0,1]], [0])
+
+
+def test_threshold_population_risk_against_independent_definition_integration():
+    risk = reference_functions('statistical-learning-theory')['threshold_population_risk']
+    X = (np.arange(10000)+.5)/10000
+    true_labels = X >= .4
+    thresholds = np.array([0.,.1,.4,.5,.9,1.])
+    expected = []
+    for threshold in thresholds:
+        agreement = (X >= threshold) == true_labels
+        expected.append(np.mean(np.where(agreement,.1,.9)))
+    np.testing.assert_allclose(risk(thresholds), expected, atol=1e-13)
+    np.testing.assert_allclose(risk([.4,.5]), [.1,.18])
+    assert risk(.4) == pytest.approx(.1)
+    with pytest.raises(ValueError):
+        risk([1.1])
+    with pytest.raises(ValueError):
+        risk([.5], noise=.5)
+
+
+def test_uniform_event_erm_comparison_with_same_objective_on_small_enumeration():
+    risks = np.array([.2,.4,.6]); epsilon, tau = .15, .05
+    for shifts in product((-epsilon,0.,epsilon),repeat=3):
+        empirical = risks+np.array(shifts)
+        chosen = int(np.argmin(empirical))
+        assert risks[chosen] <= risks.min()+2*epsilon+1e-14
+        for index in range(3):
+            if empirical[index] <= empirical.min()+tau:
+                assert risks[index] <= risks.min()+tau+2*epsilon+1e-14
+
+
+def test_learning_theory_demonstrations_match_independent_bound_and_risk_formulas(demonstration_values):
+    values = demonstration_values('statistical-learning-theory')
+    for M, radii in values['demo_radii'].items():
+        expected = [math.sqrt(math.log(2*M/.05)/(2*int(n))) for n in values['demo_n']]
+        np.testing.assert_allclose(radii, expected)
+    expected_risk = [.1+.8*abs(float(t)-.4) for t in values['demo_thresholds']]
+    np.testing.assert_allclose(values['demo_population_risk'], expected_risk)

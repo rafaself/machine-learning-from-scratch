@@ -1,7 +1,7 @@
 # Stage 02 publication record
 
-Current coverage: six published chapters with 96 exercises. Stage 02 remains
-partial; its statistical-learning chapter and integrated capstone are planned.
+Current coverage: seven published chapters with 110 exercises. Stage 02 remains
+partial; its integrated capstone is planned.
 
 ## Probability, information, and decisions — 2026-10-23
 
@@ -162,3 +162,28 @@ arguments. The mandatory reading does not claim reproduction of its later SMO
 solver. Browser/JupyterLab review verifies equations, both plots, blank answers
 and initially closed separate references. All 13 starting notebooks remain
 byte-identical, including their IDs, executable content and retained outputs.
+
+## Statistical learning theory — 2026-10-23
+
+Added one chapter with 14 exercises, two demonstration cells and six displayed
+Python reference blocks. The full local suite passes 499 checks. The 40 new
+numerical cases independently check concentration radii, sample-count ceilings,
+monotonicity/vacuity and large family counts; exact rational binomial examples
+and deterministic endpoints; threshold/interval pattern counts, duplicates and
+shattering counterexamples; fixed-table errors/ties; analytical population risk
+against an independent definition-based integration; and the ERM comparison on
+small uniformly controlled arrays.
+
+Demonstrations and every displayed reference execute in separate fresh kernels.
+The null-selection and known-risk experiments keep their families fixed before
+evaluated observations, print actual repeated-sampling records and distinguish
+Monte Carlo evidence from distribution-free proofs. The stage guide records
+workload/time/memory; no dependencies, GPU work or large datasets were added.
+All 13 notebooks present at the start of this goal remain byte-identical.
+
+The selected finite-family passage was reviewed through indexed text from the
+primary CS229 notes. Direct PDF retrieval timed out or failed TLS in this
+environment; the full document was not downloaded. The chapter's derivation and
+numerical examples were independently reviewed and checked, without claiming
+reproduction of the full VC proof. Browser/JupyterLab review verifies equations,
+both plots, blank answers and initially closed separate references.

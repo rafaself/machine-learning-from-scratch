@@ -27,7 +27,7 @@ Compare different inductive biases rather than treating one fitted model as a un
 - [decision trees](decision-trees.ipynb): **ready**
 - [tree ensembles](tree-ensembles.ipynb): **ready**
 - [support vector machines and kernels](support-vector-machines-and-kernels.ipynb): **ready**
-- statistical learning theory: **planned**
+- [statistical learning theory](statistical-learning-theory.ipynb): **ready**
 - classical benchmark: **planned**
 
 <!-- availability:end -->
@@ -77,6 +77,7 @@ aggregate accounting, not an exact physical-memory peak.
 | Decision trees | 1.250 / 178.6 | 1.408 / 182.0 |
 | Tree ensembles | 1.851 / 179.5 | 2.603 / 186.2 |
 | SVMs and kernels | 1.453 / 179.7 | 4.644 / 183.3 |
+| Statistical learning theory | 1.536 / 179.7 | 1.760 / 182.9 |
 
 The reference phase executes demonstrations and all displayed Python in order,
 excluding answer cells. This unit uses small categorical matrices, 32 normal
@@ -102,6 +103,12 @@ reference experiment runs meet that target; six exhaust the fixed budget.
 The largest final objective gap is about 0.00243113 and the largest KKT margin
 violation about 0.00623707. All runs retain their actual status; these bounded
 results are not a comparison of fully converged objective optima.
+Learning-theory investigations use a fixed 128-by-32 binary hypothesis table,
+200 trials of 64 training/128 validation observations and three nested candidate
+counts. A separate fixed 21-threshold study uses 100 trials at each of 20, 80
+and 320 observations with analytically known population risks. Exact-model
+binomial enumeration is capped at 200 observations and capacity enumeration at
+64 scalar points. These calculations do not allocate large training datasets.
 No GPU allocation is required. Other Stage 02 units and its capstone remain
 planned and will receive separate measurements before publication.
 
@@ -152,6 +159,11 @@ The kernel unit audits
 [CS229 Kernel Methods, §1.4](https://cs229.stanford.edu/summer2020/cs229-notes3.pdf),
 connecting an explicit polynomial feature map to a universal kernel argument
 and distinguishing it from a sampled Gram-matrix check.
+
+The learning-theory unit audits
+[CS229 Learning Theory, §3](https://cs229.stanford.edu/summer2020/cs229-notes4.pdf),
+focusing on the fixed-member to simultaneous-family transition, with explicit
+sampling, loss and selection assumptions.
 
 [CS229](https://cs229.stanford.edu/index.html-spr26) and the original papers or official documentation selected when each unit is authored.
 
