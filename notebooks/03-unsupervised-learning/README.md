@@ -7,7 +7,11 @@ have no placeholder notebooks. Registry readiness describes published coverage.
 
 Discover and model structure without confusing a visually persuasive representation with validated evidence.
 
-**Prerequisites:** Stage 00 probability/matrix tools and Stage 01 experimental design. Stage 02 is recommended for algorithm comparisons but is not a mathematical prerequisite.
+**Prerequisites:** Stage 00 probability/matrix tools and Stage 01 experimental
+design. The Bayesian/variational unit additionally uses the
+[Stage 02 information/decision chapter](../02-classical-ml/probability-information-and-decisions.ipynb)
+for entropy and KL. The other Stage 02 algorithms are useful comparison
+experience rather than prerequisites for the clustering, mixture or PCA units.
 
 ## Ordered units
 
@@ -22,7 +26,7 @@ Discover and model structure without confusing a visually persuasive representat
 - [clustering](clustering.ipynb): **ready**
 - [gaussian mixtures and em](gaussian-mixtures-and-em.ipynb): **ready**
 - [pca and svd](pca-and-svd.ipynb): **ready**
-- bayesian and variational inference: **planned**
+- [bayesian and variational inference](bayesian-and-variational-inference.ipynb): **ready**
 - density estimation and anomaly detection: **planned**
 - representation study: **planned**
 
@@ -39,7 +43,9 @@ diagnostics.
 The published PCA chapter implements training-fitted centering/scaling,
 projection/reconstruction, whitening and independent objective diagnostics.
 NumPy's SVD/eigensolvers are numerical primitives; PCA preprocessing and
-objectives remain visible. Bayesian/variational and density units remain planned.
+objectives remain visible. The Bayesian/variational chapter implements exact
+conjugate prediction, Gaussian KL, sequential mean-field updates and manual
+reparameterization gradients. Density/anomaly detection remains planned.
 
 Every published notebook uses the nine chapter sections, explicit notation,
 worked examples, six exercise types, and dedicated answer cells followed by
@@ -47,10 +53,10 @@ separate collapsed hints and solutions. Demonstrations run without learner work.
 
 ## Mastery gate
 
-- Explain objective differences between clustering, density modeling, and dimensionality reduction.
-- Implement the essential updates and transformations, including training-fitted centering.
-- Verify EM calculations, orthogonality, reconstruction errors, and degenerate cases on small inputs.
-- Evaluate multiple starts and representation choices using appropriate metrics and external labels only when explicitly justified.
+- Explain objective differences between clustering, density modeling and dimensionality reduction, and distinguish parameter posteriors from predictive distributions.
+- Implement the essential updates, transformations and local inference calculations, including training-fitted centering and manual variational gradients.
+- Verify EM, orthogonality, reconstruction, conjugate probabilities, KL and fixed-noise derivatives against independent small calculations.
+- Evaluate multiple starts, representation/prior choices and approximation error with declared information boundaries and uncertainty; use external labels only when justified.
 
 Keep explanations, code/checks, measured results, and limitations as separate
 evidence. A completed reading checklist alone does not establish these abilities.
@@ -59,7 +65,7 @@ evidence. A completed reading checklist alone does not establish these abilities
 
 Representation study: compare clustering and reduced representations on the same unlabeled data, report sensitivity to scale/initialization, and identify where the chosen evaluation could mislead.
 
-Submit learner work on a study branch. The reference supplies instructions,
+Submit learner work on a study branch. The planned capstone reference will supply instructions,
 blank implementation cells, self-check guidance, and a report template;
 default CI does not execute unfinished learner implementations.
 
@@ -75,6 +81,7 @@ NumPy 2.5.4 and Matplotlib 3.11.2, with BLAS/OpenMP threads set to one:
 | Clustering | 1.646 / 180.6 | 2.766 / 198.3 |
 | Gaussian mixtures and EM | 1.269 / 180.2 | 1.661 / 190.6 |
 | PCA and SVD | 1.881 / 180.0 | 2.328 / 197.3 |
+| Bayesian and variational inference | 1.276 / 181.3 | 1.911 / 197.3 |
 
 Each phase starts a fresh kernel; time includes startup, plots and shutdown.
 Memory is the approximate 20 ms sampled sum of driver/kernel-descendant RSS,
@@ -116,6 +123,17 @@ target audit distinguishes variance retention from predictive information.
 Fitting is capped at 2,000 rows and 64 features and uses thin factors. Whitening
 rejects numerically null directions under the published tolerance. No large
 sample-by-sample projection matrix is allocated.
+
+Inference sensitivity compares three priors at two declared count samples,
+with 4,000 posterior draws per case. A separate predictive check uses 12,000
+four-observation batches, drawing one shared parameter per batch. The Gaussian
+mean-field case uses two parameters, a 100-sweep budget and gain tolerance
+1e-9; it stops after 25 sweeps, retaining its nonzero family KL and mean-gradient
+diagnostic. Distribution-mass comparisons use 12,000 draws each from the target
+and approximation. Gradient experiments use eight child seeds and three paired
+sample sizes, at most 2,048 noise rows in two dimensions. Generic helpers cap
+observed counts at 10,000, future count tables at 200, Gaussian dimensions at
+eight, coordinate sweeps at 200 and supplied noise rows at 20,000.
 
 The default experiments use no GPU and stay far below the 6 GiB host-memory
 limit. Later units remain unmeasured and planned.
@@ -160,6 +178,15 @@ and independently checking variance/reconstruction. A finite target table
 tests the limits of interpreting retained variance as predictive information.
 [NumPy's SVD documentation](https://numpy.org/doc/stable/reference/generated/numpy.linalg.svd.html)
 defines the numerical primitive's thin-factor shapes and spectrum conventions.
+
+The inference unit studies
+[Stanford CS228 Bayesian Learning, Setup and Conjugate Priors/Beta Distribution](https://ermongroup.github.io/cs228-notes/learning/bayesian/)
+and [Blei, Kucukelbir and McAuliffe, §§2.2–2.4, equations (13), (15), (18)](https://arxiv.org/html/1601.00670v9).
+Reproduce conjugacy and the Gaussian coordinate update, then audit realized
+versus expected variance and optimized versus accurate approximation. The
+paper version is v9 (2018-05-09); both sources were accessed on 2026-10-23.
+The bounded work does not reproduce the full mixture experiments or establish
+general uncertainty/calibration guarantees.
 
 [CS229](https://cs229.stanford.edu/index.html-spr26) supplies scope for later
 inference units; select exact primary passages when authored.

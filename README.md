@@ -187,7 +187,8 @@ publish measured time/memory for the supplied presets.
 The [Stage 02 record](docs/stage-02-validation.md) covers its seven chapters,
 licensed offline data and integrated benchmark capstone.
 The [Stage 03 record](docs/stage-03-validation.md) covers the published
-clustering, Gaussian-mixture/EM and PCA/SVD chapters; the remaining units are planned.
+clustering, Gaussian-mixture/EM, PCA/SVD and Bayesian/variational chapters;
+the remaining units are planned.
 
 ~~~bash
 uv run pytest
@@ -197,6 +198,7 @@ uv run pytest tests/test_classical_benchmark.py
 uv run pytest tests/test_clustering.py
 uv run pytest tests/test_mixtures.py
 uv run pytest tests/test_pca.py
+uv run pytest tests/test_bayesian.py
 uv run pytest tests/test_datasets.py
 uv run pytest tests/test_execution.py
 ~~~

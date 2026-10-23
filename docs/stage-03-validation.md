@@ -1,6 +1,7 @@
 # Stage 03 publication record
 
-Current coverage: clustering, Gaussian mixtures/EM and PCA/SVD, with 49 exercises.
+Current coverage: clustering, Gaussian mixtures/EM, PCA/SVD and Bayesian/
+variational inference, with 65 exercises.
 Stage 03 is partial; subsequent units and its capstone remain planned.
 
 ## Clustering — 2026-10-23
@@ -269,3 +270,104 @@ canonical curriculum and references remain unexecuted Markdown in Run All.
 
 All 23 earlier notebooks, dependencies and package model boundaries remain
 unchanged. Publication stays on `curriculum-notebooks`, without merging `main`.
+
+## Bayesian and variational inference — 2026-10-23
+
+Published one chapter with 16 exercises, all six categories, 74 cells, two
+demonstration cells and nine displayed Python reference blocks. Answers stay
+blank with separate adjacent closed hints/solutions. At this publication the
+repository contains 25 published chapter/project notebooks and 385 exercises.
+All 24 preceding notebook byte hashes are preserved. Stage 03 remains partial:
+density/anomaly detection and the representation-study capstone remain planned.
+
+### Mathematical and numerical review
+
+The chapter derives Beta–Bernoulli conjugacy, ordered-sequence versus count
+evidence, beta-binomial prediction and shared-parameter future dependence.
+It separates parameter variance, single-outcome variance and batch variance.
+Gaussian square completion supplies an exact posterior/predictive example and
+the L2 coefficient under an explicitly averaged half-squared-loss objective.
+The MAP/Jacobian example states the coordinate dependence of density modes.
+
+The variational section defines continuous KL/support conditions, the ELBO gap,
+Gaussian KL, the unique optimum in a diagonal Gaussian family and sequential
+coordinate updates. Reparameterization gradients are derived manually at fixed
+noise, with one sample average. Exact Gaussian expectation, sampled KL,
+estimated IID error, optimizer stopping and family restriction are separate
+objects. The information/decision chapter is an explicit conceptual prerequisite;
+no live functions are imported from an earlier notebook or a package model.
+
+The 74 new independent numerical cases use rational factorial integrals for
+Beta evidence/predictive tables and moments, polynomial density quadrature,
+endpoint limits, sequential/batch equivalence and count/range checks. Separate
+tests verify future covariance, one-step variance, coordinate MAP and the exact
+prior-predictive total-variance identity. Scalar Gaussian square completion
+checks posterior stationarity, prediction, sample-size/L2 scaling and visible
+normalization-range failures.
+
+Gaussian KL is compared with an independent two-dimensional determinant/
+quadratic formula, including divergence direction. Precision-conditional
+variances, sequential coordinate snapshots, every trace entry, copied inputs,
+budget/tolerance semantics and nonzero family error are checked independently.
+Central differences of separate scalar objectives verify exact and fixed-noise
+mean/log-scale gradients. A deterministic moment-exact probe checks the quadratic
+expectation without interpreting it as IID Monte Carlo. Negative sampled KL
+is retained, and dimension/sample/variance-range cases are explicit. The
+two-dimensional probability-contour radius is checked against its radial CDF.
+
+Primary readings inspected on 2026-10-23 were Stanford CS228's Setup/Conjugate
+Priors/Beta Distribution passages and Blei, Kucukelbir and McAuliffe, v9
+(2018-05-09), §§2.2–2.4, equations (13), (15), (18). Original finite examples
+audit the selected statements; coursework answers and the paper's full mixture
+experiments are not reproduced.
+
+The Beta(10,1) counterexample increases realized variance after a failure from
+about `0.00688705` to `0.01068376`. Prior-predictive expected posterior variance
+is about `0.00631313`, and the variance of posterior means supplies the remaining
+`0.000573921`. Rational checks establish the exact total-variance identity.
+The example rejects an overbroad realized-decrease reading without contradicting
+expected variance reduction under the prior joint model.
+
+### Execution, resources and measured results
+
+The full local suite passes **819 checks**: 208 structure, 583 numerical/project,
+three offline-data and 25 isolated demonstration checks. Locked sync succeeds
+with unchanged dependencies. CI includes the new inference file in its
+separate numerical group; it never executes or grades unfinished learner code.
+
+A fresh-kernel authoring audit executes every displayed reference and
+demonstration in order without answers. Final measured demonstrations require
+1.276 seconds / 181.3 MiB approximate sampled aggregate RSS; full references
+require 1.911 seconds / 197.3 MiB. The stage guide records exact presets and the
+20 ms driver/kernel-descendant sampling convention, shared pages counted per
+process and browser memory excluded. No GPU is used.
+
+The six prior/count combinations report actual posterior moments and finite
+4,000-draw interval estimates. A 12,000-batch predictive simulation gives mean
+about `2.49608` and variance `1.25982`, versus analytic `2.5 / 1.25` and plug-in
+variance `0.9375`. This is a specified-model Monte Carlo check, not calibration
+evidence for an arbitrary real-data prior/likelihood.
+
+The correlated-Gaussian coordinate run stops by its gain tolerance after 25
+sweeps: KL is about `0.5108256243`, only `4.87e-10` above the best diagonal
+value, with mean-gradient norm about `3.12e-5`. Diagonal variances remain
+`0.36` versus true marginal variances one. The approximation's 95%-mass region
+has estimated target mass `0.69967` (Monte Carlo standard error about `0.00418`),
+while estimated own-model and target-own-region masses are `0.95108 / 0.95042`.
+These probabilities name their distributions; they are not repeated-dataset
+coverage claims. The 24 paired gradient estimates retain all eight child-seed
+trials at three sample sizes and distinguish replicate ranges from intervals.
+
+### Rendering and preservation
+
+HTML review verifies all nine sections, 32 initially closed disclosures,
+rendered equations and one default three-panel figure without MathJax errors.
+All four actual figures were visually inspected. The coordinate-KL axis and
+sample-size ticks were clarified, then re-executed and reviewed. Representative
+JupyterLab review checks written/code answer placement and keyboard opening/
+closing of separate displayed-code references without executing them. Review
+copies stay outside the canonical curriculum.
+
+All 24 preceding notebooks, their IDs/answers/outputs, dependencies and package
+boundaries remain unchanged. Publication stays on `curriculum-notebooks`;
+`main` is preserved.
