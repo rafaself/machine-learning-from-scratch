@@ -11,7 +11,7 @@ and [research practice](docs/research-practice.md) describe how this develops
 through the nine stages. Derivation accompanies explanation; critique accompanies
 evaluation. Paper studies begin with small algorithms and grow with the path.
 
-The curriculum is under active construction. **Stages 00–01 are complete,
+The curriculum is under active construction. **Stages 00–02 are complete,
 and the existing neural-network chapters are retained in Stage 04.**
 The availability table below records which material has passed
 its publication gates. Later-stage plans are not finished lessons.
@@ -27,7 +27,7 @@ merging into main. Keep learner answers on a separate study branch.
 | --- | --- | --- |
 | [00 — Mathematical Tools for Machine Learning](notebooks/00-mathematical-tools/README.md) | Apply existing calculus, linear algebra, and programming knowledge to ML arrays, statistical objectives, and finite-precision computation. | ready |
 | [01 — Machine Learning Fundamentals](notebooks/01-ml-fundamentals/README.md) | Turn predictive questions into explicitly defined models, objectives, fitting procedures, and defensible evaluations. | ready |
-| [02 — Classical Machine Learning](notebooks/02-classical-ml/README.md) | Compare different inductive biases rather than treating one fitted model as a universal solution. | partial |
+| [02 — Classical Machine Learning](notebooks/02-classical-ml/README.md) | Compare different inductive biases rather than treating one fitted model as a universal solution. | ready |
 | [03 — Unsupervised and Probabilistic Learning](notebooks/03-unsupervised-learning/README.md) | Discover and model structure without confusing a visually persuasive representation with validated evidence. | planned |
 | [04 — Neural Networks and Deep Learning Foundations](notebooks/04-neural-networks/README.md) | Understand differentiation, optimization, representation, and generalization as distinct parts of neural-network learning. | partial |
 | [05 — Deep Learning Architectures](notebooks/05-deep-learning/README.md) | Use tensor/autograd infrastructure while continuing to build and explain model architectures and training loops. | planned |
@@ -120,8 +120,9 @@ merge completed learner answers into the reference material.
 | 07–08 | Add specialized tools only for a measured learning objective that fits the target machine. |
 
 No new framework is required for this delivery. Advanced dependencies are
-introduced when their stages are authored. The reusable package stays minimal
-until a project establishes a concrete need for reuse.
+introduced when their stages are authored. The minimal package supplies the
+licensed offline Iris data needed by the Stage 02 project; model references
+remain in separately collapsed notebook cells.
 
 Examples are rows of X, shape (n, d). The original regression chapters use
 targets (n,); network chapters explicitly use (n, 1). Define reductions before
@@ -146,7 +147,7 @@ The target machine inspected on 2026-10-22 has a Ryzen 7 6800H, approximately
 - Every authored stage publishes measured configuration/runtime/memory
   evidence before being marked ready. Planned budgets are not measurements.
 
-Stages 00–01 require only CPU and small synthetic datasets. Future Transformer
+Stages 00–02 require CPU and small local datasets. Future Transformer
 experiments use small models and bounded corpora; their presets are finalized
 after measurement. Research reports must state what a local-scale experiment
 can support.
@@ -165,7 +166,7 @@ notebooks/06-transformers-generative/
 notebooks/07-ml-systems/
 notebooks/08-research/
 projects/                       Published project workspaces and report templates
-src/ml_from_scratch/             Minimal package reserved for justified reusable code
+src/ml_from_scratch/             Minimal package, including licensed offline project data
 tests/                          Registry, structure, execution, and numerical checks
 ~~~
 
@@ -183,11 +184,15 @@ comes from the registry rather than from those legacy identifiers.
 The [publication record](docs/validation.md) describes numerical, execution,
 preservation, rendering, and resource checks for this delivery. Stage guides
 publish measured time/memory for the supplied presets.
+The [Stage 02 record](docs/stage-02-validation.md) covers its seven chapters,
+licensed offline data and integrated benchmark capstone.
 
 ~~~bash
 uv run pytest
 uv run pytest tests/test_curriculum.py
 uv run pytest tests/test_numerics.py
+uv run pytest tests/test_classical_benchmark.py
+uv run pytest tests/test_datasets.py
 uv run pytest tests/test_execution.py
 ~~~
 

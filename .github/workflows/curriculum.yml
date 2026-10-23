@@ -35,7 +35,7 @@ jobs:
         run: uv run --locked --no-sync pytest tests/test_curriculum.py
 
       - name: Check mathematical and numerical examples
-        run: uv run --locked --no-sync pytest tests/test_numerics.py
+        run: uv run --locked --no-sync pytest tests/test_numerics.py tests/test_classical_benchmark.py
 
       - name: Check licensed offline data
         run: uv run --locked --no-sync pytest tests/test_datasets.py

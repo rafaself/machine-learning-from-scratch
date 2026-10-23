@@ -1,6 +1,6 @@
 # Stage 02 — Classical Machine Learning
 
-**Availability:** partial. Ready units are linked below; planned units
+**Availability:** ready. Ready units are linked below; planned units
 have no placeholder notebooks. Registry readiness describes published coverage.
 
 ## Goal and prerequisites
@@ -28,7 +28,7 @@ Compare different inductive biases rather than treating one fitted model as a un
 - [tree ensembles](tree-ensembles.ipynb): **ready**
 - [support vector machines and kernels](support-vector-machines-and-kernels.ipynb): **ready**
 - [statistical learning theory](statistical-learning-theory.ipynb): **ready**
-- classical benchmark: **planned**
+- [Capstone: classical benchmark](../../projects/02-classical-benchmark/classical-benchmark.ipynb): **ready**
 
 <!-- availability:end -->
 
@@ -54,6 +54,9 @@ evidence. A completed reading checklist alone does not establish these abilities
 
 Classical benchmark: compare several manual classifiers/regressors on shared synthetic and small licensed datasets. Include constant and linear baselines, preprocessing, validation effort, complexity, and error analysis.
 
+Open the [project instructions](../../projects/02-classical-benchmark/README.md),
+[starter](../../projects/02-classical-benchmark/classical-benchmark.ipynb) and
+[report template](../../projects/02-classical-benchmark/report-template.md).
 Submit learner work on a study branch. The reference supplies instructions,
 blank implementation cells, self-check guidance, and a report template;
 default CI does not execute unfinished learner implementations.
@@ -78,6 +81,7 @@ aggregate accounting, not an exact physical-memory peak.
 | Tree ensembles | 1.851 / 179.5 | 2.603 / 186.2 |
 | SVMs and kernels | 1.453 / 179.7 | 4.644 / 183.3 |
 | Statistical learning theory | 1.536 / 179.7 | 1.760 / 182.9 |
+| Classical benchmark capstone | 1.237 / 178.7 | 8.341 / 189.5 |
 
 The reference phase executes demonstrations and all displayed Python in order,
 excluding answer cells. This unit uses small categorical matrices, 32 normal
@@ -109,8 +113,22 @@ counts. A separate fixed 21-threshold study uses 100 trials at each of 20, 80
 and 320 observations with analytically known population risks. Exact-model
 binomial enumeration is capped at 200 observations and capacity enumeration at
 64 scalar points. These calculations do not allocate large training datasets.
-No GPU allocation is required. Other Stage 02 units and its capstone remain
-planned and will receive separate measurements before publication.
+The capstone uses 180 synthetic regression rows, 160 radial binary rows and
+150 unchanged licensed Iris records. Outer splits contain 108/36/36,
+96/32/32 and 88/30/32 rows respectively. Iris duplicate groups remain intact.
+Three common training folds and two candidates per family produce 114 adapter
+CV fits in total, followed by 22 training refits including baselines and 22
+training-only refits that check deterministic checkpoint resumption. Forests
+use eight depth-four trees; boosting uses eight depth-two stages; softmax uses
+600 steps. One-versus-rest SVMs use at most 1500 projected steps per binary
+problem. The largest training Gram is 96-by-96 (73,728 float64 bytes).
+
+Two Iris SVM fit records contain a binary solve that exhausts its budget; four
+Iris softmax fit records miss the fixed 1e-4 gradient-norm diagnostic target.
+These flags are retained; no candidate receives hidden extra work. The final
+batch evaluates already frozen choices once, with 400 paired group resamples
+per task and numeric selection/final checkpoints. No GPU allocation is required.
+Every current Stage 02 chapter and capstone now has its own measured record.
 
 CPU only. Bound kernel matrices, distance tensors, tree counts, and search grids; report arithmetic/memory differences rather than allocating unbounded all-pairs arrays.
 

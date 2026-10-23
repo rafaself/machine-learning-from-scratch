@@ -67,7 +67,7 @@
       "id": "02",
       "title": "Classical Machine Learning",
       "directory": "notebooks/02-classical-ml",
-      "status": "partial",
+      "status": "ready",
       "prerequisites": [
         "01"
       ],
@@ -104,7 +104,7 @@
       ],
       "capstone": {
         "path": "projects/02-classical-benchmark/classical-benchmark.ipynb",
-        "status": "planned"
+        "status": "ready"
       }
     },
     {

@@ -1,7 +1,8 @@
 # Stage 02 publication record
 
-Current coverage: seven published chapters with 110 exercises. Stage 02 remains
-partial; its integrated capstone is planned.
+Current coverage: seven published chapters and the integrated capstone, with
+128 exercises. Stage 02 is ready. The full repository contains 21 published
+chapter/project notebooks and 320 exercises; later unfinished units stay planned.
 
 ## Probability, information, and decisions — 2026-10-23
 
@@ -203,3 +204,41 @@ build includes all data/attribution files, and importing/loading from the built
 wheel was verified. No dependency was added. Existing ignored notebook/package
 checkpoints were preserved; clean-build verification excluded ignored artifacts.
 The benchmark capstone itself remains planned until its independent gates pass.
+
+## Classical benchmark capstone — 2026-10-23
+
+Added an 18-exercise project with instructions, self-check guidance, a blank
+report template and eleven displayed Python reference blocks. All six exercise
+categories, nine sections and adjacent blank answer/closed hint/closed solution
+cells are present. The original 20 published notebooks remain byte-identical.
+Stage 02 now contains seven complete chapters and its integrated project.
+
+The full local suite passes 550 checks. The 39 new project checks independently
+verify deterministic data and group-safe outer/CV partitions, fold-training
+scaling and held-out-outlier isolation, ridge normal equations, every softmax
+weight/bias gradient, normalization and numeric-range failures, family/class
+adapters, explicit probability mixtures and unavailable raw-score metrics,
+pooled CV arithmetic, callback-audited fitting rows, safe checkpoint round trips
+and training-only resumption, data identity and test-used flags, one final-batch
+guard, and paired group bootstrap against independently reconstructed rows.
+Unequal group means/sizes are tested so incorrect weighting is detectable.
+Default CI includes these checks and does not grade learner answers or require
+particular benchmark accuracies.
+
+Demonstrations and all displayed references execute in separate fresh kernels.
+The reference uses three local datasets, 114 adapter CV fits, 22 training refits
+and 22 deterministic training-only checkpoint-resume refits. It retains every
+fold's score, time and diagnostic, freezes validation choices, evaluates once,+saves numeric evidence without pickle and uses 400 paired group resamples per
+task. The stage guide gives measured time/memory and actual outer sizes.
+Two Iris SVM fit records remain budget-limited; four Iris softmax records miss
+the diagnostic gradient target. No candidate was dropped or silently given
+extra work, and these records do not claim all objective optima were reached.
+
+Browser review found 36 initially closed disclosures, a rendered demonstration
+plot and no MathJax errors. Current representative JupyterLab references were
+opened separately from the blank answer cells, including the checkpoint/resume
+code. The measured CV/validation reference plot was also inspected. Validation
+caught an endian dtype literal that confused the raw disclosure parser; the
+equivalent explicit byte-order construction fixes it without weakening tests.
+No production dependency or framework was added. Model references remain
+displayed notebook text; the reusable package contains only offline data access.
