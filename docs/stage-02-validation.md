@@ -1,7 +1,7 @@
 # Stage 02 publication record
 
-Current coverage: two published chapters with 32 exercises. Stage 02 remains
-partial; its five other chapters and integrated capstone are planned.
+Current coverage: three published chapters with 49 exercises. Stage 02 remains
+partial; its four other chapters and integrated capstone are planned.
 
 ## Probability, information, and decisions — 2026-10-23
 
@@ -62,3 +62,28 @@ original. Its binary limiting-risk interpretation is explicitly separated from
 finite-sample measured accuracy. Browser/JupyterLab review verifies plots,
 answer cells, and initially closed references. All 13 notebooks present at the
 start of this goal remain byte-identical.
+
+## Generative classifiers — 2026-10-23
+
+Added one chapter with 17 exercises, two demonstration cells and nine displayed
+Python reference blocks. The full local suite passes 316 checks. The 28 new
+numerical cases independently check score normalization and extreme contrasts,
+Gaussian densities against scalar two-dimensional formulas, fixed-covariance
+mean gradients by finite differences, within-class MLE covariance divisors,
+replicated-data invariance, singularity and explicit jitter, linear/quadratic
+posterior odds, Bernoulli/multinomial likelihoods and smoothing denominators,
+empty-document semantics, stable long-document scoring, frozen vocabularies and
+unknown-token counts, and exact dependence/misspecification demonstrations.
+
+All demonstrations and displayed references execute in separate fresh kernels.
+The Gaussian experiment compares three covariance assumptions on identical
+generated arrays for each regime and seed. It prints actual validation records
+and times without supplying invented student conclusions. Resource measurements
+and workload are in the stage guide; required experiments use no GPU or new
+dependencies. All 13 notebooks present at the start of this goal are unchanged.
+
+The selected CS229 source sections were checked for the shared-covariance
+estimators and logistic-posterior connection. The bounded study distinguishes
+an algebraic family identity from any claim about fitted finite-sample quality.
+Browser and JupyterLab review found no rendered equation errors; both plots,
+adjacent blank answers, and initially closed independent references were checked.

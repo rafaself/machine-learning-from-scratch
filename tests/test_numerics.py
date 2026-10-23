@@ -2,6 +2,7 @@
 
 import ast
 import copy
+import math
 import re
 from functools import lru_cache
 
@@ -1138,3 +1139,232 @@ def test_neighbor_geometry_demonstration_uses_uniform_cube_assumption(demonstrat
     np.testing.assert_allclose(radius**dimension, .1, rtol=1e-13)
     assert np.all(np.diff(radius) > 0)
     np.testing.assert_allclose(.1**(1/np.array([2., 10., 50.])), [.31622776601683794, .7943282347242815, .954992586021436], atol=1e-14)
+
+
+def test_generative_log_scores_shift_invariance_and_extreme_contrasts():
+    normalize = reference_functions('generative-classifiers')['posterior_from_scores']
+    scores = np.array([[1000., 999., 998.], [-900., -900., -900.]])
+    logp, p = normalize(scores)
+    expected = np.array([math.exp(2), math.exp(1), 1.])
+    expected /= expected.sum()
+    np.testing.assert_allclose(p, [expected, [1/3]*3], rtol=1e-13)
+    np.testing.assert_allclose(normalize(scores + np.array([[21.], [-31.]]))[0], logp)
+    np.testing.assert_allclose(np.exp(logp), p)
+    extreme_logp, extreme_p = normalize([[10000., -10000.]])
+    np.testing.assert_allclose(extreme_logp, [[0., -20000.]])
+    np.testing.assert_array_equal(extreme_p, [[1., 0.]])
+    assert normalize(np.empty((0, 3)))[0].shape == (0, 3)
+    with pytest.raises(FloatingPointError):
+        normalize([[np.finfo(float).max, -np.finfo(float).max]])
+
+
+@pytest.mark.parametrize('scores', [[1., 2.], np.empty((2, 0)), [[np.nan, 0]], [[np.inf, 0]]])
+def test_generative_log_scores_reject_invalid_arrays(scores):
+    with pytest.raises(ValueError):
+        reference_functions('generative-classifiers')['posterior_from_scores'](scores)
+
+
+def test_gaussian_density_and_mean_gradient_against_scalar_2d_objective():
+    density = reference_functions('generative-classifiers')['gaussian_logpdf']
+    X = np.array([[-1., .2], [.3, 1.1], [1.4, -.6]])
+    mean = np.array([.4, -.2])
+    covariance = np.array([[2., .6], [.6, 1.5]])
+    a, b, c = 2., .6, 1.5
+    determinant = a*c - b*b
+
+    def scalar_nll(candidate):
+        total = 0.
+        for x0, x1 in X:
+            r0, r1 = x0-candidate[0], x1-candidate[1]
+            quadratic = (c*r0*r0 - 2*b*r0*r1 + a*r1*r1) / determinant
+            total += math.log(2*math.pi) + .5*math.log(determinant) + .5*quadratic
+        return total / len(X)
+
+    actual = density(X, mean, covariance)
+    expected = []
+    for row in X:
+        r0, r1 = row-mean
+        expected.append(-math.log(2*math.pi)-.5*math.log(determinant)
+                        -.5*(c*r0*r0 - 2*b*r0*r1 + a*r1*r1)/determinant)
+    np.testing.assert_allclose(actual, expected, rtol=1e-13)
+    delta = mean-X.mean(axis=0)
+    analytical = np.array([c*delta[0]-b*delta[1], a*delta[1]-b*delta[0]]) / determinant
+    np.testing.assert_allclose(central_difference(scalar_nll, mean), analytical, rtol=1e-6, atol=1e-9)
+    assert -actual.mean() == pytest.approx(scalar_nll(mean))
+    assert density(np.empty((0, 2)), mean, covariance).shape == (0,)
+    fixed = -.5*density([[0.], [2.]], [1.], [[4.]]).sum()
+    assert fixed == pytest.approx(.5*math.log(8*math.pi)+.125)
+
+
+@pytest.mark.parametrize('covariance', [np.zeros((2, 2)), [[1., 2.], [2., 1.]], [[1., .3], [.1, 1.]], [[1., 0.], [0., np.nan]]])
+def test_gaussian_log_density_rejects_invalid_covariances(covariance):
+    with pytest.raises(ValueError):
+        reference_functions('generative-classifiers')['gaussian_logpdf']([[0., 0.]], [0., 0.], covariance)
+
+
+@pytest.mark.parametrize('kind', ['shared', 'full', 'diagonal'])
+def test_gaussian_fit_matches_independent_within_class_scatter_and_replication(kind):
+    fit = reference_functions('generative-classifiers')['fit_gaussian_classifier']
+    X = np.array([[-2,0], [-1,1], [0,-1], [1,2], [2,1], [3,0], [4,3], [6,1], [5,5]], dtype=float)
+    labels = np.array([-4]*4 + [9]*5)
+    before = X.copy()
+    model = fit(X, labels, kind, jitter=.02)
+    means = np.array([[-.5, .5], [4., 2.]])
+    scatters = []
+    for c, mean in zip([-4, 9], means):
+        scatter = np.zeros((2, 2))
+        for row in X[labels == c]:
+            r = row-mean
+            for j in range(2):
+                for k in range(2):
+                    scatter[j, k] += r[j]*r[k]
+        scatters.append(scatter)
+    if kind == 'shared':
+        expected = np.repeat(((scatters[0]+scatters[1])/9)[None], 2, axis=0)
+    else:
+        expected = np.array([scatters[0]/4, scatters[1]/5])
+        if kind == 'diagonal':
+            expected[:, 0, 1] = expected[:, 1, 0] = 0.
+    expected += .02*np.eye(2)[None]
+    np.testing.assert_array_equal(model['classes'], [-4, 9])
+    np.testing.assert_allclose(model['means'], means)
+    np.testing.assert_allclose(np.exp(model['log_prior']), [4/9, 5/9])
+    np.testing.assert_allclose(model['covariance'], expected)
+    duplicate = fit(np.repeat(X, 2, axis=0), np.repeat(labels, 2), kind, jitter=.02)
+    for key in ('means', 'covariance', 'log_prior'):
+        np.testing.assert_allclose(duplicate[key], model[key])
+    np.testing.assert_array_equal(X, before)
+
+
+def test_gaussian_classifier_hand_odds_empty_queries_and_explicit_singularity():
+    f = reference_functions('generative-classifiers')
+    X, labels = np.array([[0.], [2.], [4.], [6.]]), np.array([-4, -4, 9, 9])
+    model = f['fit_gaussian_classifier'](X, labels)
+    predicted, logp, p = f['predict_gaussian_classifier'](model, [[2.], [3.], [4.]])
+    np.testing.assert_array_equal(predicted, [-4, -4, 9])
+    np.testing.assert_allclose(logp[:, 1]-logp[:, 0], [-4., 0., 4.])
+    assert p[0, 1] == pytest.approx(1/(1+math.exp(4)))
+    assert np.mean((X-X.mean())**2) == 5.
+    assert f['predict_gaussian_classifier'](model, np.empty((0, 1)))[2].shape == (0, 2)
+    singular = [[0., 0.], [1., 1.], [2., 2.], [3., 3.]]
+    with pytest.raises(ValueError):
+        f['fit_gaussian_classifier'](singular, labels)
+    regularized = f['fit_gaussian_classifier'](singular, labels, jitter=.1)
+    assert np.all(np.linalg.eigvalsh(regularized['covariance']) > 0)
+    with pytest.raises(ValueError):
+        f['fit_gaussian_classifier'](X, [1., 1., 2., 2.])
+    with pytest.raises(ValueError):
+        f['fit_gaussian_classifier'](X, [1, 1, 1, 1])
+
+
+def test_gaussian_shared_and_unequal_variance_odds_against_closed_forms():
+    predict = reference_functions('generative-classifiers')['predict_gaussian_classifier']
+    x = np.linspace(-3., 3., 11)
+    base = dict(classes=np.array([0, 1]), means=np.array([[-1.], [1.]]),
+                log_prior=np.log([.5, .5]), covariance=np.array([[[1.]], [[1.]]]))
+    _, logp, _ = predict(base, x[:, None])
+    np.testing.assert_allclose(logp[:, 1]-logp[:, 0], 2*x, atol=1e-14)
+    base['covariance'][1, 0, 0] = 2.
+    _, logp, _ = predict(base, x[:, None])
+    expected = -.5*math.log(2)-(x-1)**2/4+(x+1)**2/2
+    np.testing.assert_allclose(logp[:, 1]-logp[:, 0], expected, atol=1e-14)
+
+
+@pytest.mark.parametrize('kind', ['bernoulli', 'multinomial'])
+def test_discrete_nb_matches_scalar_likelihoods_priors_and_count_denominators(kind):
+    f = reference_functions('generative-classifiers')
+    if kind == 'bernoulli':
+        X = np.array([[1,0], [1,1], [0,1], [0,1]])
+        queries = np.array([[1,0], [0,0], [1,1]])
+        theta = [[.75, .5], [.25, .75]]
+    else:
+        X = np.array([[2,0], [1,1], [0,2], [1,1]])
+        queries = np.array([[2,0], [0,0], [0,3]])
+        theta = [[2/3, 1/3], [1/3, 2/3]]
+    model = f['fit_discrete_nb'](X, [-7, -7, 13, 13], kind)
+    np.testing.assert_allclose(np.exp(model['log_feature']), theta)
+    predicted, logp, probabilities = f['predict_discrete_nb'](model, queries)
+    expected = []
+    for row in queries:
+        joint = []
+        for c in (0, 1):
+            likelihood = .5
+            for j, value in enumerate(row):
+                likelihood *= theta[c][j]**value
+                if kind == 'bernoulli':
+                    likelihood *= (1-theta[c][j])**(1-value)
+            joint.append(likelihood)
+        expected.append(np.array(joint)/sum(joint))
+    np.testing.assert_allclose(probabilities, expected, rtol=1e-13)
+    np.testing.assert_allclose(np.exp(logp), expected)
+    np.testing.assert_array_equal(predicted, np.array([-7, 13])[np.argmax(expected, axis=1)])
+    assert probabilities[0, 0] == pytest.approx(6/7 if kind == 'bernoulli' else .8)
+    assert f['predict_discrete_nb'](model, np.empty((0, 2)))[2].shape == (0, 2)
+    uneven = f['fit_discrete_nb']([[0,0], [1,0], [0,1]], [1,1,2], kind, alpha=3.)
+    np.testing.assert_allclose(np.exp(uneven['log_prior']), [2/3, 1/3])
+    if kind == 'multinomial':
+        np.testing.assert_allclose(f['predict_discrete_nb'](uneven, [[0,0]])[2][0], [2/3, 1/3])
+
+
+@pytest.mark.parametrize('features, kind, alpha', [
+    ([[2, 0]], 'bernoulli', 1.), ([[.5, 0]], 'multinomial', 1.),
+    ([[-1, 0]], 'multinomial', 1.), ([[np.nan, 0]], 'bernoulli', 1.),
+    ([[0, 0]], 'bernoulli', 0.), ([[0, 0]], 'bernoulli', -1.),
+    ([[0, 0]], 'multinomial', np.inf),
+])
+def test_discrete_nb_rejects_invalid_inputs(features, kind, alpha):
+    with pytest.raises(ValueError):
+        reference_functions('generative-classifiers')['fit_discrete_nb'](features, [0], kind, alpha)
+
+
+def test_discrete_nb_log_space_survives_long_documents_and_uses_absences():
+    f = reference_functions('generative-classifiers')
+    model = f['fit_discrete_nb']([[2,0], [1,1], [0,2], [1,1]], [0,0,1,1], kind='multinomial')
+    _, logp, p = f['predict_discrete_nb'](model, [[10000, 0]])
+    assert np.isfinite(logp).all() and p[0, 0] == 1.
+    assert logp[0, 0]-logp[0, 1] == pytest.approx(10000*math.log(2))
+    bernoulli = dict(kind='bernoulli', classes=np.array([0, 1]), log_prior=np.log([.5, .5]),
+                     log_feature=np.log([[.8, .8], [.2, .2]]), log_absent=np.log([[.2, .2], [.8, .8]]))
+    assert f['predict_discrete_nb'](bernoulli, [[0, 0]])[2][0, 0] == pytest.approx(1/17)
+    assert .5**2000 == 0.
+    assert 2000*math.log(.5) == pytest.approx(-1386.2943611198905)
+
+
+def test_frozen_vocabulary_unknowns_empty_documents_and_presence_features():
+    f = reference_functions('generative-classifiers')
+    training = ['Blue blue sky', 'red sky']
+    vocabulary = f['training_vocabulary'](training)
+    assert vocabulary == ('blue', 'red', 'sky')
+    queries = ['blue new new', '', 'SKY! blue']
+    counts = f['document_counts'](queries, vocabulary)
+    np.testing.assert_array_equal(counts, [[1,0,0,2], [0,0,0,0], [1,0,0,1]])
+    assert vocabulary == ('blue', 'red', 'sky') and 'new' not in vocabulary
+    assert f['document_counts']([], vocabulary).shape == (0, 4)
+    np.testing.assert_array_equal(f['document_counts'](['A a'], ()), [[2]])
+    np.testing.assert_array_equal(counts > 0, [[1,0,0,1], [0,0,0,0], [1,0,0,1]])
+    with pytest.raises(ValueError):
+        f['document_counts'](['a'], ('a', 'a'))
+    with pytest.raises(ValueError):
+        f['document_counts'](['a'], ('A',))
+
+
+def test_generative_demonstrations_against_enumerated_expected_loss(demonstration_values):
+    values = demonstration_values('generative-classifiers')
+    np.testing.assert_allclose(values['demo_linear_odds'], 2*values['demo_x'])
+    expected = []
+    for copies in range(1, 7):
+        q = 1 / (1 + 4.**(-copies))
+        expected.append(-.8*math.log(q)-.2*math.log1p(-q))
+    np.testing.assert_allclose(values['demo_factorized_loss'], expected, rtol=1e-12)
+    assert values['demo_true_loss'] == pytest.approx(-.8*math.log(.8)-.2*math.log(.2))
+    assert np.all(np.diff(expected) > 0)
+
+
+def test_poisson_feature_models_give_affine_binary_log_odds_without_gaussians():
+    rate0, rate1, prior = 2., 5., .3
+    for x in range(7):
+        p0 = math.exp(-rate0)*rate0**x / math.factorial(x)
+        p1 = math.exp(-rate1)*rate1**x / math.factorial(x)
+        ratio = math.log(prior*p1 / ((1-prior)*p0))
+        expected = x*math.log(rate1/rate0) - (rate1-rate0) + math.log(prior/(1-prior))
+        assert ratio == pytest.approx(expected)

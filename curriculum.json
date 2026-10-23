@@ -83,7 +83,7 @@
         },
         {
           "path": "notebooks/02-classical-ml/generative-classifiers.ipynb",
-          "status": "planned"
+          "status": "ready"
         },
         {
           "path": "notebooks/02-classical-ml/decision-trees.ipynb",

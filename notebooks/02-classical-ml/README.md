@@ -23,7 +23,7 @@ Compare different inductive biases rather than treating one fitted model as a un
 
 - [probability information and decisions](probability-information-and-decisions.ipynb): **ready**
 - [nearest neighbors](nearest-neighbors.ipynb): **ready**
-- generative classifiers: **planned**
+- [generative classifiers](generative-classifiers.ipynb): **ready**
 - decision trees: **planned**
 - tree ensembles: **planned**
 - support vector machines and kernels: **planned**
@@ -73,6 +73,7 @@ aggregate accounting, not an exact physical-memory peak.
 | --- | --- | --- |
 | Probability, information, and decisions | 1.411 / 179.6 | 1.624 / 186.7 |
 | Nearest neighbors | 1.561 / 179.4 | 1.559 / 184.4 |
+| Generative classifiers | 1.563 / 179.9 | 1.527 / 183.7 |
 
 The reference phase executes demonstrations and all displayed Python in order,
 excluding answer cells. This unit uses small categorical matrices, 32 normal
@@ -80,7 +81,10 @@ observations, and at most 600 Bernoulli observations per illustrated sample.
 Nearest-neighbor investigations use 80 regression rows and a separate 300-row,
 32-feature classification example, at most 120 validation queries, and default
 32-query/128-training-row search blocks. They do not allocate a full 3D distance
-tensor. No GPU allocation is required. Other Stage 02 units and its capstone remain
+tensor. Generative-classifier experiments fit three covariance assumptions to
+120 training and 200 validation rows in four dimensions, for two regimes and
+three seeds. Discrete examples use tiny generated count matrices and local text.
+No GPU allocation is required. Other Stage 02 units and its capstone remain
 planned and will receive separate measurements before publication.
 
 CPU only. Bound kernel matrices, distance tensors, tree counts, and search grids; report arithmetic/memory differences rather than allocating unbounded all-pairs arrays.
@@ -110,6 +114,11 @@ The nearest-neighbor unit studies
 [Cover and Hart (1967), Section VI](https://isl.stanford.edu/~cover/papers/transIT/0021cove.pdf),
 deriving a conditional binary mismatch calculation and distinguishing its
 large-sample assumptions from a finite experiment.
+
+The generative-classifier unit uses
+[CS229 Generative Learning Algorithms, §§1.2–1.3](https://cs229.stanford.edu/summer2020/cs229-notes2.pdf)
+for a bounded equation audit of shared-covariance estimates and logistic
+posterior odds, separating model-family identities from fitted performance.
 
 [CS229](https://cs229.stanford.edu/index.html-spr26) and the original papers or official documentation selected when each unit is authored.
 
