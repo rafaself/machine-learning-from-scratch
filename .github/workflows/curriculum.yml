@@ -37,5 +37,8 @@ jobs:
       - name: Check mathematical and numerical examples
         run: uv run --locked --no-sync pytest tests/test_numerics.py
 
+      - name: Check licensed offline data
+        run: uv run --locked --no-sync pytest tests/test_datasets.py
+
       - name: Execute demonstrations in fresh kernels
         run: uv run --locked --no-sync pytest tests/test_execution.py

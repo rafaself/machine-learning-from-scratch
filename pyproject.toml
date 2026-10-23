@@ -19,3 +19,6 @@ dev = [
 [build-system]
 requires = ["setuptools==84.2.1"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+ml_from_scratch = ["data/iris.data", "data/iris-provenance.json", "data/NOTICE.md"]

@@ -187,3 +187,19 @@ environment; the full document was not downloaded. The chapter's derivation and
 numerical examples were independently reviewed and checked, without claiming
 reproduction of the full VC proof. Browser/JupyterLab review verifies equations,
 both plots, blank answers and initially closed separate references.
+
+## Offline benchmark data — 2026-10-23
+
+Bundled the unchanged UCI `iris.data` artifact with creator attribution,
+CC BY 4.0 notice, source/DOI, retrieval date and archive/member SHA-256 hashes.
+The source's known discrepancies and exact duplicate feature records remain
+unchanged. A small package loader returns fresh arrays without downloading,
+shuffling, preprocessing or supplying model implementations. The capstone needs
+this portable offline data access from isolated notebook kernels.
+
+The full local suite passes 502 checks, including three new dataset checks;
+GitHub Actions now includes those checks explicitly. A clean materialized source
+build includes all data/attribution files, and importing/loading from the built
+wheel was verified. No dependency was added. Existing ignored notebook/package
+checkpoints were preserved; clean-build verification excluded ignored artifacts.
+The benchmark capstone itself remains planned until its independent gates pass.

@@ -1,0 +1,15 @@
+{
+  "dataset": "Iris",
+  "creator": "R. A. Fisher",
+  "citation": "Fisher, R. (1936). Iris [Dataset]. UCI Machine Learning Repository.",
+  "doi": "10.24432/C56C76",
+  "landing_page": "https://archive.ics.uci.edu/dataset/53/iris",
+  "download_url": "https://archive.ics.uci.edu/static/public/53/iris.zip",
+  "archive_sha256": "d11fe30213d36434a0879aab7cb00ce3c812eb7ba2495874438abff7b7b762e9",
+  "archive_member": "iris.data",
+  "member_sha256": "6f608b71a7317216319b4d27b4d9bc84e6abd734eda7872b71a458569e2656c0",
+  "retrieved_utc_date": "2026-10-23",
+  "license": "CC-BY-4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "changes_to_member": "None. Original bytes, row order, discrepancy entries, duplicates and trailing blank line retained."
+}
