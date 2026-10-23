@@ -1,6 +1,6 @@
 # Stage 03 publication record
 
-Current coverage: clustering and Gaussian mixtures/EM, with 33 exercises.
+Current coverage: clustering, Gaussian mixtures/EM and PCA/SVD, with 49 exercises.
 Stage 03 is partial; subsequent units and its capstone remain planned.
 
 ## Clustering — 2026-10-23
@@ -180,3 +180,92 @@ disclosures and opening/closing of displayed-code references without execution.
 Review copies and reference-run outputs stay outside the canonical repository.
 No earlier notebook, production dependency or package model implementation was
 changed. The branch remains `curriculum-notebooks`; `main` is not merged.
+
+## PCA and SVD — 2026-10-23
+
+Published one chapter with 16 exercises, all six categories, 75 cells, two
+demonstration cells and eight displayed Python reference blocks. Every answer
+is blank with separate adjacent closed hints/solutions. At this publication
+the repository contains 24 published chapter/project notebooks and 369
+exercises. All 23 earlier notebook byte hashes are preserved. The stage remains
+partial: Bayesian/variational inference, density/anomaly detection and the
+representation-study capstone are still planned.
+
+### Mathematical and numerical review
+
+The chapter derives the Rayleigh and trace arguments for orthogonal PCA,
+discarded-eigenvalue distortion, thin SVD/covariance spectrum relation and an
+independently differentiable half-reconstruction objective. It states the
+population covariance divisor, feature-weighted geometry, frozen training
+preprocessing, score/reconstruction shapes, whitening inverse and numerical
+rank tolerance. Zero-component, constant, wide and rank-deficient inputs have
+explicit conventions. Sign changes, tied eigenspaces and boundary-nonunique
+projectors are separated from uniquely determined subspaces.
+
+The 43 independent numerical cases check the hand rectangle, scalar covariance
+statistics and an independent covariance eigensolver for tall/wide data, sign
+conventions and numerical rank. Other cases cover covariance divisors,
+whitened training covariance and inverse reconstruction, shifted probes with
+frozen preprocessing, zero components, empty queries, constant features,
+numerically null whitening, tiny/huge scale normalization and visible raw-range
+failures. Shape, work-limit and boolean-option contracts are checked directly.
+
+Central differences of a nested scalar reconstruction objective validate every
+trial-basis gradient at one/four rows and zero/one/two columns, without assuming
+orthonormality during perturbation. Row duplication checks the observation
+average. A zero stationary trial matrix is explicitly worse than the leading
+PCA basis. Independent Rayleigh grids, tied-projector examples, affine/raw-SVD
+contrasts, an outlier calculation, variance/target counting and squared
+condition numbers check separate mathematical claims. A scaled-metric test
+uses a separated eigenspectrum rather than requiring an arbitrary tied basis.
+
+Selected passages in the official CS229 PCA notes (p.2, pp.5–6) and NumPy's
+SVD interface/notes were inspected. The original four-row target audit retains
+`100/101` of variance while its exact one-dimensional score has best table
+accuracy `1/2`; the original second coordinate determines the target exactly.
+The analytic counting argument is separated from numerical roundoff in the
+fitted projector. It limits a predictive-information interpretation, without
+contradicting the variance/reconstruction optimum or claiming a four-row
+generalization estimate.
+
+### Execution, resources and measured results
+
+The full local suite passes **736 checks**: 200 structure, 509 numerical/project,
+three offline-data and 24 fresh-kernel demonstration checks. Locked sync
+succeeds with unchanged dependencies. CI runs the new PCA cases in its
+numerical group; its folded command retains all preceding cases. Learner
+answers are neither executed nor graded.
+
+The separate authoring audit executes every displayed Python reference and
+demonstration in chapter order without answers. Measured demonstrations take
+1.881 seconds / 180.0 MiB approximate sampled aggregate RSS; full references
+take 2.328 seconds / 197.3 MiB. The stage guide records settings and approximate
+driver/kernel-descendant accounting, with shared pages counted per process
+and browser memory excluded. No GPU is used.
+
+On the fixed six-feature example, two components retain about `0.99244199` of
+training variance, with training/validation distortion `0.08244960 / 0.09602235`.
+All six directions reconstruct both samples within numerical roundoff; this
+is not a latent-dimension discovery criterion. Standardized and whitened
+reconstructions agree to a maximum difference about `8.88e-16`, while score
+distances and covariances change as specified.
+
+For ideal weak singular value `1e-10`, float64 direct SVD has relative weak
+variance error about `1.31e-6`; formed covariance has a negative computed weak
+eigenvalue around `−1.39e-17`, which is reported. Rounding that dense input to
+float32 removes the weak direction; both its native SVD and a float64 SVD of
+the already rounded matrix return zero. These are measured finite cases,
+not a promise of universal SVD accuracy or recovery of lost input information.
+
+### Rendering and preservation
+
+HTML review verifies all nine sections, 32 initially closed disclosures, actual
+rendered equations, one default three-panel figure and no MathJax errors.
+Visual inspection covers the projection residuals, spectrum and tail-error
+plot, as well as all three additional experimental figures. JupyterLab review
+checks written/code answer placement, displayed equations and keyboard opening/
+closing of separate reference disclosures. Review copies stay outside the
+canonical curriculum and references remain unexecuted Markdown in Run All.
+
+All 23 earlier notebooks, dependencies and package model boundaries remain
+unchanged. Publication stays on `curriculum-notebooks`, without merging `main`.

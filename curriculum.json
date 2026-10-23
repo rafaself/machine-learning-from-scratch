@@ -128,7 +128,7 @@
         },
         {
           "path": "notebooks/03-unsupervised-learning/pca-and-svd.ipynb",
-          "status": "planned"
+          "status": "ready"
         },
         {
           "path": "notebooks/03-unsupervised-learning/bayesian-and-variational-inference.ipynb",

@@ -21,7 +21,7 @@ Discover and model structure without confusing a visually persuasive representat
 
 - [clustering](clustering.ipynb): **ready**
 - [gaussian mixtures and em](gaussian-mixtures-and-em.ipynb): **ready**
-- pca and svd: **planned**
+- [pca and svd](pca-and-svd.ipynb): **ready**
 - bayesian and variational inference: **planned**
 - density estimation and anomaly detection: **planned**
 - representation study: **planned**
@@ -35,9 +35,11 @@ clustering chapter specifies initialization, tie rules, empty-cluster policies,
 iteration status, linkage units and partition-metric boundary cases. The
 mixture calculations use stable log responsibilities, manually derived likelihood
 gradients, a fixed covariance constraint and explicit gain/budget/failure
-diagnostics. The mixture chapter is published; subsequent units remain planned.
+diagnostics.
+The published PCA chapter implements training-fitted centering/scaling,
+projection/reconstruction, whitening and independent objective diagnostics.
 NumPy's SVD/eigensolvers are numerical primitives; PCA preprocessing and
-objectives remain visible.
+objectives remain visible. Bayesian/variational and density units remain planned.
 
 Every published notebook uses the nine chapter sections, explicit notation,
 worked examples, six exercise types, and dedicated answer cells followed by
@@ -72,6 +74,7 @@ NumPy 2.5.4 and Matplotlib 3.11.2, with BLAS/OpenMP threads set to one:
 | --- | --- | --- |
 | Clustering | 1.646 / 180.6 | 2.766 / 198.3 |
 | Gaussian mixtures and EM | 1.269 / 180.2 | 1.661 / 190.6 |
+| PCA and SVD | 1.881 / 180.0 | 2.328 / 197.3 |
 
 Each phase starts a fresh kernel; time includes startup, plots and shutdown.
 Memory is the approximate 20 ms sampled sum of driver/kernel-descendant RSS,
@@ -103,6 +106,16 @@ separate fixed-floor fits, each stopping after three updates. A two-row
 auxiliary-bound audit uses direct E/M calculations. Generic fitting is capped
 at 2,000 rows, eight components/features, 200 steps and 16 starts. Numerical
 zero-mass/factorization failures are retained rather than silently repaired.
+
+PCA comparisons use seven retained-dimension choices (0–6), including the
+mean-only baseline, on 120 training and 160 validation rows in six features.
+Three two-component geometry/whitening procedures use the same samples with a
+declared unit conversion. Six tiny precision cases compare direct SVD with
+formed covariance across two dtypes and three weak singular values; a four-row
+target audit distinguishes variance retention from predictive information.
+Fitting is capped at 2,000 rows and 64 features and uses thin factors. Whitening
+rejects numerically null directions under the published tolerance. No large
+sample-by-sample projection matrix is allocated.
 
 The default experiments use no GPU and stay far below the 6 GiB host-memory
 limit. Later units remain unmeasured and planned.
@@ -140,8 +153,16 @@ likelihood to an average. Reproduce the equality-conditioned ascent chain and
 construct a finite counterexample to an arbitrary loose auxiliary update.
 The local audit does not claim general parameter convergence or latent recovery.
 
-[CS229](https://cs229.stanford.edu/index.html-spr26) supplies scope for the planned
-PCA and later inference units; select exact primary passages when authored.
+The PCA unit studies
+[CS229 PCA notes, p.2 and pp.5–6](https://see.stanford.edu/materials/aimlcs229/cs229-notes10.pdf),
+translating its preprocessing and projection argument into row-wise observations
+and independently checking variance/reconstruction. A finite target table
+tests the limits of interpreting retained variance as predictive information.
+[NumPy's SVD documentation](https://numpy.org/doc/stable/reference/generated/numpy.linalg.svd.html)
+defines the numerical primitive's thin-factor shapes and spectrum conventions.
+
+[CS229](https://cs229.stanford.edu/index.html-spr26) supplies scope for later
+inference units; select exact primary passages when authored.
 
 The lessons are original and self-contained. External coursework supplies
 scope and alternative explanations, not copied assignment answers.
