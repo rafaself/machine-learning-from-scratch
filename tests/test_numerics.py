@@ -1836,3 +1836,208 @@ def test_exponential_loss_stage_against_independent_derivative_and_reweighting()
     assert objective([beta]) == pytest.approx(math.sqrt(3)/2)
     assert error*math.exp(beta)/objective([beta]) == pytest.approx(.5)
     np.testing.assert_allclose(central_difference(objective, [beta]), [0.], atol=1e-9)
+
+
+@pytest.mark.parametrize('C', [.1, 1.3])
+@pytest.mark.parametrize('n', [1, 5])
+def test_hinge_primal_subgradient_against_independent_smooth_snapshot(C, n):
+    evaluate = reference_functions('support-vector-machines-and-kernels')['hinge_primal']
+    X = np.linspace(-.6, .8, n*2).reshape(n, 2)
+    y = np.where(np.arange(n) % 2, 1., -1.)
+    theta = np.array([.2, -.3, .1])
+    assert np.all(np.abs(y*(X@theta[:2]+theta[2])-1) > .1)
+
+    def independent(candidate):
+        squared = sum(float(w)**2 for w in candidate[:2])/2
+        hinge = sum(max(0., 1-float(label)*(float(row[0])*candidate[0]+float(row[1])*candidate[1]+candidate[2]))
+                    for label, row in zip(y, X))
+        return squared+C*hinge
+
+    objective, dw, db = evaluate(X, y, theta[:2], theta[2], C)
+    assert objective == pytest.approx(independent(theta))
+    np.testing.assert_allclose(np.r_[dw, db], central_difference(independent, theta), rtol=1e-6, atol=1e-9)
+    repeated = evaluate(np.repeat(X, 2, axis=0), np.repeat(y, 2), theta[:2], theta[2], C/2)
+    np.testing.assert_allclose([objective, *dw, db], [repeated[0], *repeated[1], repeated[2]])
+
+
+def test_hinge_kink_selected_subgradient_differs_from_symmetric_difference():
+    evaluate = reference_functions('support-vector-machines-and-kernels')['hinge_primal']
+    value, dw, db = evaluate([[1.]], [1], [1.], 0., 1.)
+    assert value == .5 and dw[0] == 1. and db == 0.
+    independent = lambda candidate: .5*float(candidate[0])**2+max(0., 1-float(candidate[0]))
+    assert central_difference(independent, [1.])[0] == pytest.approx(.5, abs=1e-8)
+    for query in (-2., .3, 1., 1.4, 3.):
+        assert independent([query]) >= value+dw[0]*(query-1)-1e-14
+
+
+@pytest.mark.parametrize('kind', ['linear', 'polynomial', 'rbf'])
+def test_kernel_matrices_against_independent_features_and_scalar_distances(kind):
+    kernel = reference_functions('support-vector-machines-and-kernels')['kernel_matrix']
+    X = np.array([[-1., .2], [.3, .7], [1.1, -.4]])
+    Z = np.array([[.5, -.6], [.2, .9]])
+    actual = kernel(X, Z, kind)
+    expected = np.empty((3, 2))
+    for i, x in enumerate(X):
+        for j, z in enumerate(Z):
+            dot = sum(float(a)*float(b) for a,b in zip(x,z))
+            expected[i,j] = dot if kind == 'linear' else ((1+dot)**2 if kind == 'polynomial'
+                                                          else math.exp(-sum((float(a)-float(b))**2 for a,b in zip(x,z))))
+    np.testing.assert_allclose(actual, expected, rtol=1e-13)
+    gram = kernel(X, X, kind)
+    np.testing.assert_allclose(gram, gram.T)
+    assert np.linalg.eigvalsh(gram).min() >= -1e-12
+    assert kernel(np.empty((0, 2)), Z, kind).shape == (0, 2)
+    if kind == 'polynomial':
+        features = lambda A: np.column_stack([np.ones(len(A)), np.sqrt(2)*A[:,0], np.sqrt(2)*A[:,1],
+                                              A[:,0]**2, np.sqrt(2)*A[:,0]*A[:,1], A[:,1]**2])
+        np.testing.assert_allclose(actual, features(X)@features(Z).T, rtol=1e-13)
+
+
+@pytest.mark.parametrize('kwargs', [dict(gamma=0.), dict(gamma=np.nan), dict(offset=-1.),
+                                   dict(degree=True), dict(degree=1.5), dict(degree=5), dict(kind='unknown')])
+def test_kernel_invalid_constructions_are_rejected(kwargs):
+    with pytest.raises(ValueError):
+        reference_functions('support-vector-machines-and-kernels')['kernel_matrix']([[0.]], [[1.]], **kwargs)
+
+
+def test_rbf_direct_distances_preserve_large_offset_and_indefinite_similarity_is_rejected():
+    f = reference_functions('support-vector-machines-and-kernels')
+    X = np.array([[1e12], [1e12+1]])
+    np.testing.assert_allclose(f['kernel_matrix'](X, X, 'rbf'), [[1, math.exp(-1)], [math.exp(-1), 1]])
+    invalid = np.array([[1., 2.], [2., 1.]])
+    assert np.array([1.,-1.])@invalid@np.array([1.,-1.]) == -2.
+    with pytest.raises(ValueError):
+        f['fit_svm_dual'](invalid, [-1,1])
+
+
+@pytest.mark.parametrize('C', [.1, 1., 3.])
+@pytest.mark.parametrize('values', [[.8, .2], [-2., 4.], [-2., -3.]])
+def test_dual_projection_two_coordinates_matches_exact_scalar_solution(C, values):
+    project = reference_functions('support-vector-machines-and-kernels')['project_svm_dual']
+    actual = project(values, [-1,1], C)
+    expected = min(C, max(0., sum(values)/2))
+    np.testing.assert_allclose(actual, [expected, expected], atol=1e-10)
+    assert np.all(actual >= 0) and np.all(actual <= C)
+    assert abs(np.array([-1.,1.])@actual) <= 1e-9
+
+
+def test_dual_projection_equality_active_bounds_and_interior_plane_projection():
+    project = reference_functions('support-vector-machines-and-kernels')['project_svm_dual']
+    np.testing.assert_allclose(project([.7,.2,.8],[-1,-1,1],1.), [2/3,1/6,5/6], atol=1e-10)
+    np.testing.assert_allclose(project([2.,-1.,.3],[-1,-1,1],1.), [1,0,1], atol=1e-10)
+    np.testing.assert_allclose(project([1.,0.,0.],[1,1,-1],1.), [.5,0,.5], atol=1e-10)
+    assert np.array([1,1,-1])@np.clip([1.,0.,0.],0,1) == 1.
+    for labels in ([1,1], [0,1]):
+        with pytest.raises(ValueError):
+            project([.3,.4], labels, 1.)
+
+
+@pytest.mark.parametrize('C', [.1, .5, 1., 10.])
+def test_svm_two_point_optimum_and_primal_dual_certificate(C):
+    f = reference_functions('support-vector-machines-and-kernels')
+    X, y = np.array([[-1.], [1.]]), np.array([-1,1])
+    model = f['fit_kernel_svm'](X, y, C, tolerance=1e-9)
+    a = min(C, .5); w = 2*a
+    expected = w*w/2+C*2*max(0., 1-w)
+    assert model['converged']
+    np.testing.assert_allclose(model['alpha'], a, atol=1e-9)
+    assert model['bias'] == pytest.approx(0., abs=1e-10)
+    assert model['primal'] == pytest.approx(expected)
+    assert model['dual'] == pytest.approx(2*a-2*a*a)
+    assert abs(model['gap']) < 1e-9 and model['kkt_violation'] < 1e-9
+    assert np.all(np.diff(model['history'][:, 2]) >= -1e-12)
+    np.testing.assert_allclose(model['margins'], w)
+    np.testing.assert_allclose(model['train_X'][:,0]@model['coefficients'], w)
+    predicted, scores = f['predict_kernel_svm'](model, [[-2.], [0.], [2.]], query_block=1)
+    np.testing.assert_array_equal(predicted, [-1,1,1])
+    np.testing.assert_allclose(scores, [-2*w,0,2*w])
+
+
+def test_svm_budget_exhaustion_is_explicit_and_more_work_checks_kkt():
+    f = reference_functions('support-vector-machines-and-kernels')
+    X = np.array([[-2.],[-1.],[1.],[2.]])
+    y = np.array([-1,-1,1,1])
+    short = f['fit_kernel_svm'](X, y, max_steps=1, tolerance=1e-8)
+    assert short['iterations'] == 1 and not short['converged'] and short['gap'] > .1
+    model = f['fit_kernel_svm'](X, y, max_steps=2000, tolerance=1e-7)
+    assert model['converged'] and model['gap'] <= 1e-7*max(1.,model['primal'])
+    assert abs(y@model['alpha']) <= 1e-9
+    w = X.T@model['coefficients']
+    margins = y*(X@w+model['bias'])
+    primal = float(w@w)/2+sum(max(0.,1-float(m)) for m in margins)
+    assert model['primal'] == pytest.approx(primal)
+    for a, margin in zip(model['alpha'], margins):
+        if a <= 1e-7:
+            assert margin >= 1-1e-4
+        elif a >= 1-1e-7:
+            assert margin <= 1+1e-4
+        else:
+            assert margin == pytest.approx(1., abs=1e-4)
+    assert np.all(np.diff(model['history'][:, 2]) >= -1e-10)
+
+
+def test_svm_zero_gram_recovers_majority_bias_and_bound_interval_diagnostic():
+    f = reference_functions('support-vector-machines-and-kernels')
+    model = f['fit_svm_dual'](np.zeros((3,3)), [-1,-1,1], C=1.)
+    assert model['converged']
+    np.testing.assert_allclose(model['alpha'], [.5,.5,1.], atol=1e-9)
+    assert model['bias'] == pytest.approx(-1.)
+    assert model['primal'] == pytest.approx(2.) and model['dual'] == pytest.approx(2.)
+    unfinished = f['svm_diagnostics'](np.eye(2), [-1,1], np.zeros(2), 1.)
+    assert not unfinished['bias_interval_valid'] and unfinished['gap'] == 2.
+
+
+def test_polynomial_svm_exact_xor_feature_solution_and_query_blocks():
+    f = reference_functions('support-vector-machines-and-kernels')
+    X = np.array([[-1.,-1.],[-1.,1.],[1.,-1.],[1.,1.]])
+    y = np.array([1,-1,-1,1])
+    original = X.copy()
+    model = f['fit_kernel_svm'](X, y, kind='polynomial', tolerance=1e-9)
+    assert model['converged']
+    np.testing.assert_allclose(model['alpha'], .125, atol=1e-9)
+    assert model['primal'] == pytest.approx(.25) and model['dual'] == pytest.approx(.25)
+    query = np.array([[-2.,.3], [.7,.9], [0.,0.]])
+    labels, scores = f['predict_kernel_svm'](model, query, query_block=1)
+    np.testing.assert_allclose(scores, query[:,0]*query[:,1], atol=1e-9)
+    np.testing.assert_allclose(f['predict_kernel_svm'](model, query, query_block=10)[1], scores)
+    assert f['predict_kernel_svm'](model, np.empty((0, 2)))[1].shape == (0,)
+    X[:] = 99.
+    np.testing.assert_array_equal(model['train_X'], original)
+    with pytest.raises(ValueError):
+        f['predict_kernel_svm'](model, query, query_block=0)
+
+
+def test_svm_observation_duplication_requires_adjusting_summed_C():
+    f = reference_functions('support-vector-machines-and-kernels')
+    X, y = np.array([[-1.],[1.]]), np.array([-1,1])
+    base = f['fit_kernel_svm'](X, y, C=.1)
+    duplicated_X, duplicated_y = np.repeat(X, 2, axis=0), np.repeat(y, 2)
+    same_objective = f['fit_kernel_svm'](duplicated_X, duplicated_y, C=.05)
+    changed_objective = f['fit_kernel_svm'](duplicated_X, duplicated_y, C=.1)
+    slopes = [float(m['train_X'][:,0]@m['coefficients']) for m in (base,same_objective,changed_objective)]
+    np.testing.assert_allclose(slopes, [.2,.2,.4], atol=1e-9)
+    assert same_objective['primal'] == pytest.approx(base['primal'])
+    assert changed_objective['primal'] == pytest.approx(.32)
+
+
+@pytest.mark.parametrize('kwargs', [dict(C=0.),dict(C=np.inf),dict(tolerance=0.),dict(max_steps=0),
+                                   dict(max_steps=True),dict(max_steps=10001)])
+def test_svm_rejects_invalid_optimization_controls(kwargs):
+    with pytest.raises(ValueError):
+        reference_functions('support-vector-machines-and-kernels')['fit_svm_dual'](np.eye(2), [-1,1], **kwargs)
+
+
+def test_svm_rejects_wrong_gram_shapes_asymmetry_and_unsigned_labels():
+    solve = reference_functions('support-vector-machines-and-kernels')['fit_svm_dual']
+    for gram, labels in ((np.ones((2,3)),[-1,1]), ([[1.,.3],[.1,1.]],[-1,1]),
+                         (np.eye(2),[0,1]),(np.eye(2),[1,1]),(np.eye(129),[-1]*64+[1]*65)):
+        with pytest.raises(ValueError):
+            solve(gram, labels)
+
+
+def test_svm_demo_hinge_upper_bound_and_analytic_geometry(demonstration_values):
+    values = demonstration_values('support-vector-machines-and-kernels')
+    np.testing.assert_allclose(values['demo_hinge'], np.maximum(0,1-values['demo_margin']))
+    assert np.all(values['demo_hinge'] >= values['demo_zero_one'])
+    assert np.dot([3,4],[1,1])-1 == 6
+    assert 6/np.linalg.norm([3,4]) == 12/np.linalg.norm([6,8])

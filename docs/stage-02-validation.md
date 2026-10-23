@@ -1,7 +1,7 @@
 # Stage 02 publication record
 
-Current coverage: five published chapters with 80 exercises. Stage 02 remains
-partial; its two other chapters and integrated capstone are planned.
+Current coverage: six published chapters with 96 exercises. Stage 02 remains
+partial; its statistical-learning chapter and integrated capstone are planned.
 
 ## Probability, information, and decisions — 2026-10-23
 
@@ -137,3 +137,28 @@ and node-level feature sampling. The reading task explicitly distinguishes hard
 votes, soft probabilities, finite coverage, tuning reuse and broader statistical
 claims. Browser/JupyterLab inspection checks equations, plotted analytical
 curves, blank answers and separately collapsed references.
+
+## SVMs and kernels — 2026-10-23
+
+Added one chapter with 16 exercises, two demonstration cells and eight displayed
+Python reference blocks. The full local suite passes 450 checks. The 42 new
+numerical cases independently check hinge subgradients away from kinks and a
+valid selected subgradient at a kink, loss-normalization/replication behavior,
+explicit polynomial features and scalar RBF distances, invalid kernel examples,
+box/equality projection against exact small solutions, primal/dual optima and
+KKT conditions, budget exhaustion, bias recovery without a separating feature,
+an exact polynomial XOR solution, query blocks and input preservation.
+
+Fresh isolated kernels execute demonstrations and all displayed references.
+The fixed-budget ring experiment includes 12 runs, of which six meet the relative
+gap target and six remain unfinished at 2000 steps. These statuses and actual
+gaps are retained and summarized in the stage guide. No run was dropped or
+silently granted extra work. Exact small optimization cases converge and match
+independent primal/dual calculations. Dense Gram limits and measured resources
+are explicit; no dependencies or GPU work were added.
+
+The selected CS229 kernel section was checked for feature-map and validity
+arguments. The mandatory reading does not claim reproduction of its later SMO
+solver. Browser/JupyterLab review verifies equations, both plots, blank answers
+and initially closed separate references. All 13 starting notebooks remain
+byte-identical, including their IDs, executable content and retained outputs.

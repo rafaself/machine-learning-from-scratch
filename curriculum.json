@@ -95,7 +95,7 @@
         },
         {
           "path": "notebooks/02-classical-ml/support-vector-machines-and-kernels.ipynb",
-          "status": "planned"
+          "status": "ready"
         },
         {
           "path": "notebooks/02-classical-ml/statistical-learning-theory.ipynb",

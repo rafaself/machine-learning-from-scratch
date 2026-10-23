@@ -26,7 +26,7 @@ Compare different inductive biases rather than treating one fitted model as a un
 - [generative classifiers](generative-classifiers.ipynb): **ready**
 - [decision trees](decision-trees.ipynb): **ready**
 - [tree ensembles](tree-ensembles.ipynb): **ready**
-- support vector machines and kernels: **planned**
+- [support vector machines and kernels](support-vector-machines-and-kernels.ipynb): **ready**
 - statistical learning theory: **planned**
 - classical benchmark: **planned**
 
@@ -76,6 +76,7 @@ aggregate accounting, not an exact physical-memory peak.
 | Generative classifiers | 1.563 / 179.9 | 1.527 / 183.7 |
 | Decision trees | 1.250 / 178.6 | 1.408 / 182.0 |
 | Tree ensembles | 1.851 / 179.5 | 2.603 / 186.2 |
+| SVMs and kernels | 1.453 / 179.7 | 4.644 / 183.3 |
 
 The reference phase executes demonstrations and all displayed Python in order,
 excluding answer cells. This unit uses small categorical matrices, 32 normal
@@ -94,6 +95,13 @@ Ensemble comparisons use 100 training and 160 validation rows in four dimensions
 12 depth-four trees, two candidate-feature settings and three seeds. Boosting
 uses 120/160 rows in three dimensions, 12 depth-two stages and two declared losses.
 Out-of-bag contributor indices are retained and uncovered rows are reported.
+SVM comparisons use 48 training and 80 validation rows in two dimensions,
+four linear/RBF configurations over three seeds, a 2000-step budget and a
+relative gap target of 1e-5. Each Gram matrix is 18,432 bytes. Six of the 12
+reference experiment runs meet that target; six exhaust the fixed budget.
+The largest final objective gap is about 0.00243113 and the largest KKT margin
+violation about 0.00623707. All runs retain their actual status; these bounded
+results are not a comparison of fully converged objective optima.
 No GPU allocation is required. Other Stage 02 units and its capstone remain
 planned and will receive separate measurements before publication.
 
@@ -139,6 +147,11 @@ The ensemble unit studies
 [Breiman (2001), §§3.1 and 4](https://www.stat.berkeley.edu/~breiman/randomforest2001.pdf)
 for OOB contributors and node-level feature sampling, with an explicit hard/soft
 voting distinction and limits on internal-validation claims.
+
+The kernel unit audits
+[CS229 Kernel Methods, §1.4](https://cs229.stanford.edu/summer2020/cs229-notes3.pdf),
+connecting an explicit polynomial feature map to a universal kernel argument
+and distinguishing it from a sampled Gram-matrix check.
 
 [CS229](https://cs229.stanford.edu/index.html-spr26) and the original papers or official documentation selected when each unit is authored.
 
