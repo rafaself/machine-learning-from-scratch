@@ -1,7 +1,7 @@
 # Stage 02 publication record
 
-Current coverage: three published chapters with 49 exercises. Stage 02 remains
-partial; its four other chapters and integrated capstone are planned.
+Current coverage: four published chapters with 65 exercises. Stage 02 remains
+partial; its three other chapters and integrated capstone are planned.
 
 ## Probability, information, and decisions — 2026-10-23
 
@@ -87,3 +87,27 @@ estimators and logistic-posterior connection. The bounded study distinguishes
 an algebraic family identity from any claim about fitted finite-sample quality.
 Browser and JupyterLab review found no rendered equation errors; both plots,
 adjacent blank answers, and initially closed independent references were checked.
+
+## Decision trees — 2026-10-23
+
+Added one chapter with 16 exercises, two demonstration cells and seven displayed
+Python reference blocks. The full local suite passes 359 checks. The 34 new
+numerical cases independently check four impurities, all legal one-step
+partitions with several leaf-size rules, unequal child weights, tie/repeated-value
+behavior, extreme/adjacent-float thresholds, regression/classification traversal,
+size and stopping limits, conflicting duplicates, the deliberate positive-gain
+XOR limitation, and fixed-tree pruning against exhaustive subtree enumeration.
+Exact tests distinguish global risk from local gain and training-order
+invariance from midpoint-based predictions after a nonlinear transformation.
+
+Demonstrations and every displayed reference run in fresh separate kernels.
+Measured workloads include matched growth/pruning comparisons and four controlled
+one-label perturbations, with timing and model-size records. Resource details
+are in the stage guide; no dependencies or GPU work were introduced. All 13
+starting notebooks remain byte-identical. The selected CS229 sections were
+checked for weighted gain, finite partitions and regularization scope.
+
+Structural validation caught an unescaped less-than expression inside a hint
+that confused raw disclosure parsing. It was corrected with LaTeX notation and
+all checks rerun. Browser and JupyterLab inspection verifies the equations,
+both plots, adjacent blank answer cells, and initially closed references.

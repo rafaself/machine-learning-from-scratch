@@ -87,7 +87,7 @@
         },
         {
           "path": "notebooks/02-classical-ml/decision-trees.ipynb",
-          "status": "planned"
+          "status": "ready"
         },
         {
           "path": "notebooks/02-classical-ml/tree-ensembles.ipynb",

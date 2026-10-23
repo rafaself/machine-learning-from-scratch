@@ -1368,3 +1368,212 @@ def test_poisson_feature_models_give_affine_binary_log_odds_without_gaussians():
         ratio = math.log(prior*p1 / ((1-prior)*p0))
         expected = x*math.log(rate1/rate0) - (rate1-rate0) + math.log(prior/(1-prior))
         assert ratio == pytest.approx(expected)
+
+
+def scalar_tree_risk(targets, criterion):
+    """Independent small-vector oracle, deliberately avoiding reference helpers."""
+    values = list(targets)
+    if criterion == 'mse':
+        mean = sum(values)/len(values)
+        return sum((value-mean)**2 for value in values)/len(values)
+    frequencies = [values.count(c)/len(values) for c in sorted(set(values))]
+    if criterion == 'gini':
+        return 1-sum(p*p for p in frequencies)
+    if criterion == 'entropy':
+        return -sum(p*math.log(p) for p in frequencies)
+    return 1-max(frequencies)
+
+
+@pytest.mark.parametrize('criterion', ['mse', 'gini', 'entropy', 'zero_one'])
+def test_tree_impurity_against_scalar_loss_and_pure_nodes(criterion):
+    impurity = reference_functions('decision-trees')['tree_impurity']
+    y = [0,0,0,1,1,2]
+    assert impurity(y, criterion) == pytest.approx(scalar_tree_risk(y, criterion))
+    assert impurity([5,5,5], criterion) == 0.
+    if criterion != 'mse':
+        assert impurity([-9,-9,-9,2,2,100], criterion) == pytest.approx(impurity(y, criterion))
+        with pytest.raises(ValueError):
+            impurity([0., 1.], criterion)
+    with pytest.raises(ValueError):
+        impurity([], criterion)
+    with pytest.raises(ValueError):
+        impurity([0, np.nan], criterion)
+
+
+@pytest.mark.parametrize('criterion', ['mse', 'gini', 'entropy', 'zero_one'])
+@pytest.mark.parametrize('min_leaf', [1, 2, 3])
+def test_tree_split_matches_exhaustive_scalar_partition_oracle(criterion, min_leaf):
+    best_split = reference_functions('decision-trees')['best_tree_split']
+    X = np.array([[0,0], [0,1], [1,1], [2,2], [3,2], [3,3]], dtype=float)
+    y = [0,0,1,2,2,1]
+    candidates = []
+    parent = scalar_tree_risk(y, criterion)
+    for j in range(2):
+        values = sorted(set(float(row[j]) for row in X))
+        for a, b in zip(values[:-1], values[1:]):
+            threshold = (a+b)/2
+            left = [y[i] for i in range(len(y)) if X[i, j] <= threshold]
+            right = [y[i] for i in range(len(y)) if X[i, j] > threshold]
+            if min(len(left), len(right)) < min_leaf:
+                continue
+            gain = parent-(len(left)*scalar_tree_risk(left, criterion)
+                           + len(right)*scalar_tree_risk(right, criterion))/len(y)
+            candidates.append((gain, j, threshold))
+    actual = best_split(X, y, criterion, min_leaf)
+    assert actual is not None
+    assert actual['gain'] == pytest.approx(max(v[0] for v in candidates), abs=1e-14)
+    matching = [v for v in candidates if v[1:] == (actual['feature'], actual['threshold'])]
+    assert len(matching) == 1 and matching[0][0] == pytest.approx(actual['gain'])
+    left = X[:, actual['feature']] <= actual['threshold']
+    assert min(left.sum(), (~left).sum()) >= min_leaf
+    for value in np.unique(X[:, actual['feature']]):
+        assert len(set(left[X[:, actual['feature']] == value])) == 1
+
+
+def test_tree_hand_gains_weight_children_and_use_global_node_mass():
+    f = reference_functions('decision-trees')
+    assert f['tree_impurity']([0.,0.,2.,2.], 'mse') == 1.
+    assert scalar_tree_risk([0,2,2], 'mse') == pytest.approx(8/9)
+    assert 1-.75*f['tree_impurity']([0.,2.,2.], 'mse') == pytest.approx(1/3)
+    assert .5-.75*f['tree_impurity']([0,1,1], 'gini') == pytest.approx(1/6)
+    entropy_gain = math.log(2)-.75*f['tree_impurity']([0,1,1], 'entropy')
+    assert entropy_gain == pytest.approx(.21576155433883565)
+    model = f['fit_tree']([[0.], [1.], [2.], [3.]], [0,0,1,1])
+    assert model['root']['risk'] == .5
+    assert model['root']['left']['risk'] == 0.
+    assert (4/20)*.5 == .1
+
+
+def test_tree_split_ties_constants_repeated_values_and_float_midpoints():
+    f = reference_functions('decision-trees')
+    X = np.repeat(np.arange(4.)[:, None], 2, axis=1)
+    split = f['best_tree_split'](X, [0,0,1,1])
+    assert split == dict(feature=0, threshold=1.5, gain=.5)
+    tied_threshold = f['best_tree_split']([[0.], [1.], [2.]], [0,1,0])
+    assert tied_threshold['threshold'] == .5
+    assert f['best_tree_split'](np.ones((4, 2)), [0,1,0,1]) is None
+    assert f['best_tree_split'](X, [0,0,1,1], min_leaf=3) is None
+    low = 1e308
+    high = np.nextafter(low, np.inf)
+    adjacent = f['best_tree_split']([[low], [high]], [0,1])
+    assert low <= adjacent['threshold'] < high
+    opposite = f['best_tree_split']([[-1e308], [1e308]], [0,1])
+    assert opposite['threshold'] == 0.
+    with pytest.raises(ValueError):
+        f['best_tree_split']([[0.], [np.inf]], [0,1])
+
+
+@pytest.mark.parametrize('criterion', ['mse', 'gini', 'entropy'])
+def test_tree_fit_predictions_sizes_stopping_and_empty_queries(criterion):
+    f = reference_functions('decision-trees')
+    X = np.arange(4.)[:, None]
+    y = np.array([0.,0.,2.,2.]) if criterion == 'mse' else np.array([-3,-3,7,7])
+    before = X.copy(), y.copy()
+    model = f['fit_tree'](X, y, criterion, max_depth=4)
+    prediction, probabilities = f['predict_tree'](model, [[1.5], [2.]])
+    np.testing.assert_array_equal(prediction, [0.,2.] if criterion == 'mse' else [-3,7])
+    assert f['tree_size'](model) == (3,2,1)
+    if criterion == 'mse':
+        assert probabilities is None
+    else:
+        np.testing.assert_array_equal(probabilities, [[1,0], [0,1]])
+    empty = f['predict_tree'](model, np.empty((0, 1)))
+    assert empty[0].shape == (0,)
+    if criterion != 'mse':
+        assert empty[1].shape == (0, 2)
+    root_only = f['fit_tree'](X, y, criterion, max_depth=0)
+    assert f['tree_size'](root_only) == (1,1,0)
+    assert f['tree_size'](f['fit_tree'](X, y, criterion, min_leaf=3)) == (1,1,0)
+    np.testing.assert_array_equal(X, before[0]); np.testing.assert_array_equal(y, before[1])
+    with pytest.raises(ValueError):
+        f['predict_tree'](model, [[0., 1.]])
+
+
+def test_tree_positive_gain_contract_keeps_xor_and_conflicting_duplicates_unsplit():
+    f = reference_functions('decision-trees')
+    X, y = [[0,0], [0,1], [1,0], [1,1]], [0,1,1,0]
+    assert f['best_tree_split'](X, y)['gain'] == 0.
+    assert f['tree_size'](f['fit_tree'](X, y, max_depth=2)) == (1,1,0)
+    duplicate = f['fit_tree']([[1.], [1.]], [-3,7])
+    prediction, probability = f['predict_tree'](duplicate, [[1.]])
+    np.testing.assert_array_equal(prediction, [-3])
+    np.testing.assert_array_equal(probability, [[.5,.5]])
+    positive = f['fit_tree']([[0.], [1.]], [0,1], min_gain=.5)
+    assert f['tree_size'](positive) == (1,1,0)
+
+
+@pytest.mark.parametrize('kwargs', [dict(max_depth=-1), dict(max_depth=17), dict(max_depth=True),
+                                   dict(min_leaf=0), dict(min_leaf=3), dict(min_leaf=1.5),
+                                   dict(min_gain=-.1), dict(min_gain=np.nan)])
+def test_tree_growth_rejects_invalid_controls(kwargs):
+    with pytest.raises(ValueError):
+        reference_functions('decision-trees')['fit_tree']([[0.], [1.]], [0,1], **kwargs)
+
+
+def test_fixed_tree_pruning_matches_exhaustive_subtree_costs_and_preserves_model():
+    f = reference_functions('decision-trees')
+    X = np.arange(8.)[:, None]
+    y = np.array([0.,0.,1.,1.,3.,3.,2.,2.])
+    model = f['fit_tree'](X, y, 'mse', max_depth=4)
+    original = copy.deepcopy(model)
+
+    def all_cost_pairs(node):
+        choices = [(node['risk'], 1)]
+        if 'left' in node:
+            for lr, ll in all_cost_pairs(node['left']):
+                for rr, rl in all_cost_pairs(node['right']):
+                    choices.append((lr+rr, ll+rl))
+        return choices
+
+    def leaf_risk(node):
+        return node['risk'] if 'left' not in node else leaf_risk(node['left'])+leaf_risk(node['right'])
+
+    choices = all_cost_pairs(model['root'])
+    previous_leaves = math.inf
+    for alpha in (0., .01, .1, .3, .5, 1., 2.):
+        pruned = f['prune_tree'](model, alpha)
+        leaves = f['tree_size'](pruned)[1]
+        objective = leaf_risk(pruned['root']) + alpha*leaves
+        assert objective == pytest.approx(min(risk+alpha*count for risk, count in choices))
+        assert leaves <= previous_leaves
+        previous_leaves = leaves
+    assert f['tree_size'](model) == f['tree_size'](original)
+    np.testing.assert_array_equal(f['predict_tree'](model, X)[0], f['predict_tree'](original, X)[0])
+    assert model['root'] is not f['prune_tree'](model, 0.)['root']
+    for bad in (-1., np.nan, np.inf):
+        with pytest.raises(ValueError):
+            f['prune_tree'](model, bad)
+
+
+def test_tree_pruning_exact_breakpoint_and_nested_global_weights():
+    f = reference_functions('decision-trees')
+    model = f['fit_tree'](np.arange(4.)[:, None], [0,0,1,1])
+    assert f['tree_size'](f['prune_tree'](model, .49))[1] == 2
+    assert f['tree_size'](f['prune_tree'](model, .5))[1] == 1
+    scaled = copy.deepcopy(model)
+    scaled['root']['risk'] *= .2
+    assert f['tree_size'](f['prune_tree'](scaled, .099))[1] == 2
+    assert f['tree_size'](f['prune_tree'](scaled, .1))[1] == 1
+
+
+def test_nonlinear_monotone_transform_preserves_training_partition_not_midpoint_query():
+    f = reference_functions('decision-trees')
+    X, query = np.array([[0.], [2.]]), np.array([[1.2]])
+    raw = f['fit_tree'](X, [0,1], max_depth=1)
+    transformed = f['fit_tree'](X**3, [0,1], max_depth=1)
+    np.testing.assert_array_equal(f['predict_tree'](raw, X)[0], f['predict_tree'](transformed, X**3)[0])
+    assert raw['root']['threshold'] == 1. and transformed['root']['threshold'] == 4.
+    assert f['predict_tree'](raw, query)[0][0] == 1
+    assert f['predict_tree'](transformed, query**3)[0][0] == 0
+
+
+def test_tree_demonstration_costs_and_multiclass_risks(demonstration_values):
+    values = demonstration_values('decision-trees')
+    np.testing.assert_allclose(values['demo_split_cost'], 2*values['demo_alpha'])
+    np.testing.assert_allclose(values['demo_leaf_cost'], 1+values['demo_alpha'])
+    assert 2*1. == 1+1.
+    labels = [0]*6+[1]*3+[2]
+    impurity = reference_functions('decision-trees')['tree_impurity']
+    assert impurity(labels, 'zero_one') == pytest.approx(.4)
+    assert impurity(labels, 'gini') == pytest.approx(.54)
+    assert impurity(labels, 'entropy') == pytest.approx(.8979457248567798)
