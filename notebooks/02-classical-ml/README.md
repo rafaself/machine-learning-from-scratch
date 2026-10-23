@@ -11,15 +11,17 @@ Compare different inductive biases rather than treating one fitted model as a un
 
 ## Ordered units
 
-1. Nearest neighbors: distance, scaling, neighbor search, dimensionality, and local predictions.
-2. Generative classifiers: class-conditional models, Gaussian discriminant analysis, Naive Bayes, smoothing, and log probabilities.
-3. Decision trees: impurity reductions, split search, stopping, pruning, and instability.
-4. Tree ensembles: bootstrap aggregation, feature subsampling, forests, additive boosting, and gradient boosting.
-5. SVMs and kernels: margins, constrained objectives, dual intuition, kernel validity, and small-scale optimization.
-6. Statistical learning theory: hypothesis classes, finite-class concentration, capacity, VC intuition, margins, and limits of guarantees.
+1. Probability, information, and decisions: likelihood/MAP scaling, proper losses, entropy/cross-entropy/KL, mutual information, multiclass logits, and Bayes risk.
+2. Nearest neighbors: distance, scaling, neighbor search, dimensionality, and local predictions.
+3. Generative classifiers: class-conditional models, Gaussian discriminant analysis, Naive Bayes, smoothing, and log probabilities.
+4. Decision trees: impurity as expected loss, split search, stopping, pruning, and instability.
+5. Tree ensembles: bootstrap aggregation, feature subsampling, forests, additive boosting, and gradient boosting.
+6. SVMs and kernels: margins, constrained objectives, dual intuition, kernel validity, and small-scale optimization.
+7. Statistical learning theory: hypothesis classes, finite-class concentration, capacity, VC intuition, margins, and limits of guarantees.
 
 <!-- availability:start -->
 
+- probability information and decisions: **planned**
 - nearest neighbors: **planned**
 - generative classifiers: **planned**
 - decision trees: **planned**
@@ -64,6 +66,14 @@ Use fixed splits/seeds, record objective normalization and model selection,
 and disclose unsuccessful runs. Standard experiments target about 30 minutes;
 resumable capstones target roughly two hours. Correctness checks stay short.
 Reported results and resource measurements must come from actual executions.
+
+## Research connection
+
+Each developed unit includes a bounded primary-source study with an equation,
+independent check, and a claim the local experiment can support. See the
+[foundations map](../../docs/foundations-and-connections.md) and
+[research practice](../../docs/research-practice.md). New coverage remains
+planned until its notebook and measurements pass publication gates.
 
 ## Readings
 

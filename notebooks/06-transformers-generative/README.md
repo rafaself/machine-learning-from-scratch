@@ -11,22 +11,28 @@ Construct a complete small language-model pipeline whose tokenizer, data boundar
 
 ## Ordered units
 
-1. Tokenization and text data: bytes/Unicode, BPE, train/validation/test document boundaries, licensed sources, small streaming data, and token accounting.
-2. Attention: query/key/value projections, scaling, causal/padding masks, multi-head shapes, and numerical checks.
-3. Decoder Transformers: residual blocks, normalization, positional representations, feed-forward layers, tied embeddings, and next-token objectives.
-4. Language-model training and generation: data packing, optimization, checkpointing, held-out loss, perplexity, sampling, and reproducibility.
-5. Optional branch: variational autoencoders and latent-variable objectives.
-6. Optional branch: small diffusion processes and denoising objectives.
-7. Optional branch: multimodal representation alignment on tiny paired datasets.
+1. Generative-modeling foundations: autoregressive factorization, latent-variable/variational objectives, denoising/score intuition, vector fields, and sampling versus likelihood. This shared overview is required; full branch implementations below are optional.
+2. Tokenization and text data: bytes/Unicode, BPE, train/validation/test document boundaries, licensed sources, small streaming data, and token accounting.
+3. Attention: query/key/value projections, scaling, causal/padding masks, multi-head shapes, and numerical checks.
+4. Decoder Transformers: residual blocks, normalization, positional representations, feed-forward layers, tied embeddings, and next-token objectives.
+5. Sequence-architecture comparisons: recurrence, attention, state-space intuition, conditional expert computation, inductive assumptions, and arithmetic/memory tradeoffs on small examples.
+6. Language-model training and generation: data packing, optimization, checkpointing, held-out loss, perplexity, sampling, and reproducibility.
+7. Optional branch: variational autoencoders and latent-variable objectives.
+8. Optional branch: small diffusion processes, denoising objectives, and score interpretation.
+9. Optional branch: flow matching, conditional paths, vector-field regression, and small ODE sampling experiments.
+10. Optional branch: multimodal representation alignment on tiny paired datasets.
 
 <!-- availability:start -->
 
+- generative modeling foundations: **planned**
 - tokenization and text data: **planned**
 - attention: **planned**
 - decoder transformers: **planned**
+- sequence architecture comparisons: **planned**
 - language model training and generation: **planned**
 - variational autoencoders: **planned** (optional branch)
 - diffusion models: **planned** (optional branch)
+- flow matching: **planned** (optional branch)
 - multimodal introduction: **planned** (optional branch)
 - decoder language model: **planned**
 
@@ -66,6 +72,14 @@ Use fixed splits/seeds, record objective normalization and model selection,
 and disclose unsuccessful runs. Standard experiments target about 30 minutes;
 resumable capstones target roughly two hours. Correctness checks stay short.
 Reported results and resource measurements must come from actual executions.
+
+## Research connection
+
+Each developed unit includes a bounded primary-source study with an equation,
+independent check, and a claim the local experiment can support. See the
+[foundations map](../../docs/foundations-and-connections.md) and
+[research practice](../../docs/research-practice.md). New coverage remains
+planned until its notebook and measurements pass publication gates.
 
 ## Readings
 

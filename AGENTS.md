@@ -87,3 +87,9 @@
   authored stage ready. Label future budgets as targets, not measurements.
 - Every stage's mastery gate requires explaining, implementing, independently
   verifying, and evaluating. Research-track completion is independent per track.
+- Include derivation with explanation and experimental critique with evaluation.
+  Use docs/foundations-and-connections.md for the additional topic dependencies
+  and docs/research-practice.md for bounded paper studies throughout the path.
+- Select primary readings when authoring a unit. Specify the section/equation,
+  prerequisites, local question, and reproduction scope. Keep technical claims
+  supported and distinguish exact math, numerical checks, and measured findings.

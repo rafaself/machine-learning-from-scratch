@@ -14,16 +14,20 @@ Understand differentiation, optimization, representation, and generalization as 
 1. Perceptron: label conventions, signed margins, updates, convergence assumptions, and representation limits.
 2. Backpropagation: shared paths, cached parameter snapshots, batched affine/activation rules, and gradient checking.
 3. Multilayer perceptron: one/two hidden layers, initialization, manual training, regularization, and validation.
-4. Momentum and Adam: stateful updates, bias correction, schedules, optimizer comparisons, and checkpoint state.
-5. Normalization and dropout: training/evaluation behavior, statistical axes, randomness, and reproducibility.
-6. Automatic differentiation: build a small reverse-mode engine only after deriving gradients manually; accumulation, graph reuse, broadcasting reductions, and elementary operations.
+4. Multiclass learning objectives: categorical likelihood, stable softmax, cross-entropy/KL, Jacobians, label conventions, and representation/decision distinctions.
+5. Momentum and Adam: stateful updates, bias correction, schedules, optimizer comparisons, and checkpoint state.
+6. Optimization geometry and diagnostics: curvature/spectrum, stochastic gradient variation, activation/gradient distributions, initialization, saturation, and controlled failure analysis.
+7. Normalization and dropout: training/evaluation behavior, statistical axes, randomness, and reproducibility.
+8. Automatic differentiation: build a small reverse-mode engine after deriving gradients manually; accumulation, graph reuse, broadcasting reductions, and elementary operations.
 
 <!-- availability:start -->
 
 - [perceptron](perceptron.ipynb): **ready**
 - [backpropagation](backpropagation.ipynb): **ready**
 - [multilayer perceptron](multilayer-perceptron.ipynb): **ready**
+- multiclass learning objectives: **planned**
 - momentum and adam: **planned**
+- optimization geometry and diagnostics: **planned**
 - normalization and dropout: **planned**
 - automatic differentiation: **planned**
 - autodiff and network: **planned**
@@ -81,6 +85,14 @@ Use fixed splits/seeds, record objective normalization and model selection,
 and disclose unsuccessful runs. Standard experiments target about 30 minutes;
 resumable capstones target roughly two hours. Correctness checks stay short.
 Reported results and resource measurements must come from actual executions.
+
+## Research connection
+
+Each developed unit includes a bounded primary-source study with an equation,
+independent check, and a claim the local experiment can support. See the
+[foundations map](../../docs/foundations-and-connections.md) and
+[research practice](../../docs/research-practice.md). New coverage remains
+planned until its notebook and measurements pass publication gates.
 
 ## Readings
 

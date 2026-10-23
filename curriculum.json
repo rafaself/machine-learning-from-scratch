@@ -74,6 +74,10 @@
       "progression": "core",
       "chapters": [
         {
+          "path": "notebooks/02-classical-ml/probability-information-and-decisions.ipynb",
+          "status": "planned"
+        },
+        {
           "path": "notebooks/02-classical-ml/nearest-neighbors.ipynb",
           "status": "planned"
         },
@@ -127,6 +131,10 @@
           "status": "planned"
         },
         {
+          "path": "notebooks/03-unsupervised-learning/bayesian-and-variational-inference.ipynb",
+          "status": "planned"
+        },
+        {
           "path": "notebooks/03-unsupervised-learning/density-estimation-and-anomaly-detection.ipynb",
           "status": "planned"
         }
@@ -159,7 +167,15 @@
           "status": "ready"
         },
         {
+          "path": "notebooks/04-neural-networks/multiclass-learning-objectives.ipynb",
+          "status": "planned"
+        },
+        {
           "path": "notebooks/04-neural-networks/momentum-and-adam.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/04-neural-networks/optimization-geometry-and-diagnostics.ipynb",
           "status": "planned"
         },
         {
@@ -201,6 +217,10 @@
         {
           "path": "notebooks/05-deep-learning/embeddings-and-transfer-learning.ipynb",
           "status": "planned"
+        },
+        {
+          "path": "notebooks/05-deep-learning/self-supervised-representations.ipynb",
+          "status": "planned"
         }
       ],
       "capstone": {
@@ -219,6 +239,10 @@
       "progression": "core",
       "chapters": [
         {
+          "path": "notebooks/06-transformers-generative/generative-modeling-foundations.ipynb",
+          "status": "planned"
+        },
+        {
           "path": "notebooks/06-transformers-generative/tokenization-and-text-data.ipynb",
           "status": "planned"
         },
@@ -228,6 +252,10 @@
         },
         {
           "path": "notebooks/06-transformers-generative/decoder-transformers.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/06-transformers-generative/sequence-architecture-comparisons.ipynb",
           "status": "planned"
         },
         {
@@ -241,6 +269,11 @@
         },
         {
           "path": "notebooks/06-transformers-generative/diffusion-models.ipynb",
+          "status": "planned",
+          "optional": true
+        },
+        {
+          "path": "notebooks/06-transformers-generative/flow-matching.ipynb",
           "status": "planned",
           "optional": true
         },
@@ -290,7 +323,15 @@
           "status": "planned"
         },
         {
+          "path": "notebooks/07-ml-systems/reinforcement-learning-for-post-training.ipynb",
+          "status": "planned"
+        },
+        {
           "path": "notebooks/07-ml-systems/preference-optimization-and-evaluation.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/07-ml-systems/inference-time-computation-and-search.ipynb",
           "status": "planned"
         }
       ],
@@ -335,6 +376,10 @@
         },
         {
           "path": "notebooks/08-research/retrieval-augmented-generation.ipynb",
+          "status": "planned"
+        },
+        {
+          "path": "notebooks/08-research/planning-and-tool-systems.ipynb",
           "status": "planned"
         }
       ],

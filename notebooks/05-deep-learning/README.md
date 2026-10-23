@@ -12,9 +12,10 @@ Use tensor/autograd infrastructure while continuing to build and explain model a
 ## Ordered units
 
 1. PyTorch bridge: tensors, devices, autograd, modes, parameter/state management, reproducibility, and an explicit training loop.
-2. Convolutional and residual networks: receptive fields, parameter sharing, convolution shapes, residual connections, and image classification.
+2. Convolutional and residual networks: receptive fields, parameter sharing, convolution shapes, residual gradient paths, and image classification.
 3. Recurrent sequence models: unrolled graphs, BPTT, padding/masks, RNNs, LSTMs, GRUs, and controlled sequence tasks.
 4. Embeddings and transfer learning: learned representations, frozen versus trainable components, source-task mismatch, and evaluation.
+5. Self-supervised representations: contrastive and masked targets, augmentations/invariances, paired-modal intuition, representation collapse, and leakage-controlled downstream evaluation.
 
 <!-- availability:start -->
 
@@ -22,6 +23,7 @@ Use tensor/autograd infrastructure while continuing to build and explain model a
 - convolutional and residual networks: **planned**
 - recurrent sequence models: **planned**
 - embeddings and transfer learning: **planned**
+- self supervised representations: **planned**
 - image and sequence models: **planned**
 
 <!-- availability:end -->
@@ -60,6 +62,14 @@ Use fixed splits/seeds, record objective normalization and model selection,
 and disclose unsuccessful runs. Standard experiments target about 30 minutes;
 resumable capstones target roughly two hours. Correctness checks stay short.
 Reported results and resource measurements must come from actual executions.
+
+## Research connection
+
+Each developed unit includes a bounded primary-source study with an equation,
+independent check, and a claim the local experiment can support. See the
+[foundations map](../../docs/foundations-and-connections.md) and
+[research practice](../../docs/research-practice.md). New coverage remains
+planned until its notebook and measurements pass publication gates.
 
 ## Readings
 

@@ -17,7 +17,9 @@ Improve a correct language model through measured systems and data changes while
 4. Scaling and data quality: small-budget scaling experiments, uncertainty/extrapolation limits, filtering, deduplication, data mixtures, and document-level evaluation.
 5. Inference and quantization: KV caching, batching, latency/throughput, quantization error, and resource/quality tradeoffs.
 6. Fine-tuning and LoRA: full versus low-rank updates, parameter/memory accounting, and small supervised adaptation.
-7. Preference optimization and evaluation: SFT, preference objectives such as DPO, sequence-level probability accounting, and comparative evaluation.
+7. Reinforcement learning for post-training: small MDPs, returns, action probabilities, policy gradients, baselines, reward/KL objectives, and independently checked toy examples. Advanced RL remains a Stage 08 track.
+8. Preference optimization and evaluation: distinguish SFT, reward-based RL, and preference objectives such as DPO; verify sequence probabilities and compare under declared selection/evaluation budgets.
+9. Inference-time computation and search: sampling/selection, bounded search, verifiers, budget-dependent evaluation, and small model-assisted decision processes.
 
 <!-- availability:start -->
 
@@ -27,7 +29,9 @@ Improve a correct language model through measured systems and data changes while
 - scaling and data quality: **planned**
 - inference and quantization: **planned**
 - fine tuning and lora: **planned**
+- reinforcement learning for post training: **planned**
 - preference optimization and evaluation: **planned**
+- inference time computation and search: **planned**
 - language model systems: **planned**
 
 <!-- availability:end -->
@@ -66,6 +70,14 @@ Use fixed splits/seeds, record objective normalization and model selection,
 and disclose unsuccessful runs. Standard experiments target about 30 minutes;
 resumable capstones target roughly two hours. Correctness checks stay short.
 Reported results and resource measurements must come from actual executions.
+
+## Research connection
+
+Each developed unit includes a bounded primary-source study with an equation,
+independent check, and a claim the local experiment can support. See the
+[foundations map](../../docs/foundations-and-connections.md) and
+[research practice](../../docs/research-practice.md). New coverage remains
+planned until its notebook and measurements pass publication gates.
 
 ## Readings
 

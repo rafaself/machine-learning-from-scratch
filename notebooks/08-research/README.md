@@ -18,6 +18,7 @@ Practice research through a focused, falsifiable reproduction rather than treati
 5. Mixture of experts: routing, sparse expert computation, load balancing, and small-model comparisons.
 6. Advanced multimodal systems: small paired-data objectives, modality alignment, retrieval, and failure analysis.
 7. Retrieval-augmented generation: corpus/chunking choices, retrieval and generation metrics, leakage controls, and small-system ablations.
+8. Planning and tool systems: bounded environments, state and observations, model/search/tool interfaces, task-level evaluation, and controlled failure studies.
 
 <!-- availability:start -->
 
@@ -28,6 +29,7 @@ Practice research through a focused, falsifiable reproduction rather than treati
 - mixture of experts: **planned**
 - advanced multimodal: **planned**
 - retrieval augmented generation: **planned**
+- planning and tool systems: **planned**
 - research reproduction: **planned**
 
 <!-- availability:end -->
@@ -85,6 +87,7 @@ scope and alternative explanations, not copied assignment answers.
 | MoE | Stages 06–07 for routing and resource comparisons |
 | Multimodal systems | Stage 05 and the optional Stage 06 introduction |
 | Retrieval-augmented generation | Stage 06 and retrieval/evaluation foundations |
+| Planning and tool systems | Stage 06 and Stage 07 sequential-decision/search foundations |
 
 The learner chooses one track; none requires completing all the others.
 

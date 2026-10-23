@@ -4,6 +4,13 @@ A learning path from manually implemented regression to small Transformers,
 language-model training, measured systems improvements, and focused research.
 The audience already knows calculus, linear algebra, and programming.
 
+The long-term goal is to read a new AI paper, explain its assumptions, derive
+its essential equations, implement a bounded version, independently verify it,
+and critique the evidence. The [foundations and topic connections](docs/foundations-and-connections.md)
+and [research practice](docs/research-practice.md) describe how this develops
+through the nine stages. Derivation accompanies explanation; critique accompanies
+evaluation. Paper studies begin with small algorithms and grow with the path.
+
 The curriculum is under active construction. **Stages 00–01 are complete,
 and the existing neural-network chapters are retained in Stage 04.**
 The availability table below records which material has passed

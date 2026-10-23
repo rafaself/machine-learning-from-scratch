@@ -12,15 +12,17 @@ Discover and model structure without confusing a visually persuasive representat
 ## Ordered units
 
 1. Clustering: K-means, initialization, hierarchical linkage, distance choices, and cluster assessment.
-2. Gaussian mixtures and EM: latent assignments, likelihood, responsibilities, lower-bound intuition, monotonicity assumptions, and singularities.
-3. PCA and SVD: centering, orthogonal projections, variance and reconstruction objectives, rank, and scaling.
-4. Density estimation and anomaly detection: density versus anomaly scores, threshold selection, contamination, and distribution shift.
+2. Gaussian mixtures and EM: latent assignments, likelihood, responsibilities, lower-bound derivation, monotonicity assumptions, and singularities.
+3. PCA and SVD: centering, orthogonal projections, variance and reconstruction objectives, rank, spectrum, conditioning, and scaling.
+4. Bayesian and variational inference: conjugate posterior/predictive examples, point versus distributional estimates, latent variables, Jensen/KL bounds, and approximation limits.
+5. Density estimation and anomaly detection: density versus anomaly scores, threshold selection, contamination, and distribution shift.
 
 <!-- availability:start -->
 
 - clustering: **planned**
 - gaussian mixtures and em: **planned**
 - pca and svd: **planned**
+- bayesian and variational inference: **planned**
 - density estimation and anomaly detection: **planned**
 - representation study: **planned**
 
@@ -60,6 +62,14 @@ Use fixed splits/seeds, record objective normalization and model selection,
 and disclose unsuccessful runs. Standard experiments target about 30 minutes;
 resumable capstones target roughly two hours. Correctness checks stay short.
 Reported results and resource measurements must come from actual executions.
+
+## Research connection
+
+Each developed unit includes a bounded primary-source study with an equation,
+independent check, and a claim the local experiment can support. See the
+[foundations map](../../docs/foundations-and-connections.md) and
+[research practice](../../docs/research-practice.md). New coverage remains
+planned until its notebook and measurements pass publication gates.
 
 ## Readings
 

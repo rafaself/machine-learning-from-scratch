@@ -283,3 +283,15 @@ def test_published_projects_have_instructions_and_evidence_templates():
         assert 'self-check' in instructions.lower() and 'checkpoint' in instructions.lower()
         assert 'independent' in instructions.lower()
         assert 'limitations' in template.lower()
+
+
+def test_foundations_and_research_practice_are_explicit():
+    foundations = (ROOT / 'docs/foundations-and-connections.md').read_text()
+    practice = (ROOT / 'docs/research-practice.md').read_text()
+    template = (ROOT / 'docs/paper-study-template.md').read_text()
+    for verb in ('explain', 'derive', 'implement', 'verify', 'evaluate', 'critique'):
+        assert verb in practice.lower() and verb in template.lower()
+    for topic in ('Information theory', 'Generative modeling', 'Sequential decisions', 'Systems and data'):
+        assert topic in foundations
+    assert 'planned' in foundations and '6 GiB host' in foundations and '5 GiB GPU' in foundations
+    assert 'primary' in practice and 'uncertainty' in practice and 'departures' in practice
