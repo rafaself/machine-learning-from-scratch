@@ -19,7 +19,7 @@ experience rather than prerequisites for the clustering, mixture or PCA units.
 2. Gaussian mixtures and EM: latent assignments, likelihood, responsibilities, lower-bound derivation, monotonicity assumptions, and singularities.
 3. PCA and SVD: centering, orthogonal projections, variance and reconstruction objectives, rank, spectrum, conditioning, and scaling.
 4. Bayesian and variational inference: conjugate posterior/predictive examples, point versus distributional estimates, latent variables, Jensen/KL bounds, and approximation limits.
-5. Density estimation and anomaly detection: density versus anomaly scores, threshold selection, contamination, and distribution shift.
+5. Density estimation and anomaly detection: normalized Gaussian KDE, independent bandwidth selection, manual derivatives, density units/typicality, exact split-conformal ranks, contamination, and distribution shift.
 
 <!-- availability:start -->
 
@@ -27,7 +27,7 @@ experience rather than prerequisites for the clustering, mixture or PCA units.
 - [gaussian mixtures and em](gaussian-mixtures-and-em.ipynb): **ready**
 - [pca and svd](pca-and-svd.ipynb): **ready**
 - [bayesian and variational inference](bayesian-and-variational-inference.ipynb): **ready**
-- density estimation and anomaly detection: **planned**
+- [density estimation and anomaly detection](density-estimation-and-anomaly-detection.ipynb): **ready**
 - representation study: **planned**
 
 <!-- availability:end -->
@@ -45,7 +45,11 @@ projection/reconstruction, whitening and independent objective diagnostics.
 NumPy's SVD/eigensolvers are numerical primitives; PCA preprocessing and
 objectives remain visible. The Bayesian/variational chapter implements exact
 conjugate prediction, Gaussian KL, sequential mean-field updates and manual
-reparameterization gradients. Density/anomaly detection remains planned.
+reparameterization gradients. Density/anomaly detection adds blocked log-domain
+Gaussian KDE, a fixed-floor Gaussian baseline, validation-only bandwidth
+selection, manual log-bandwidth gradients and independently calibrated rank
+decisions. Score semantics, finite-sample marginal validity, detection power
+and shift robustness are separate claims.
 
 Every published notebook uses the nine chapter sections, explicit notation,
 worked examples, six exercise types, and dedicated answer cells followed by
@@ -53,10 +57,10 @@ separate collapsed hints and solutions. Demonstrations run without learner work.
 
 ## Mastery gate
 
-- Explain objective differences between clustering, density modeling and dimensionality reduction, and distinguish parameter posteriors from predictive distributions.
-- Implement the essential updates, transformations and local inference calculations, including training-fitted centering and manual variational gradients.
-- Verify EM, orthogonality, reconstruction, conjugate probabilities, KL and fixed-noise derivatives against independent small calculations.
-- Evaluate multiple starts, representation/prior choices and approximation error with declared information boundaries and uncertainty; use external labels only when justified.
+- Explain objective differences between clustering, density modeling and dimensionality reduction, distinguish parameter posteriors from predictive distributions, and state the probability space and assumptions of a false-alarm guarantee.
+- Implement the essential updates, transformations and local inference calculations, including training-fitted centering, manual variational/bandwidth gradients and exact calibrated ranks.
+- Verify EM, orthogonality, reconstruction, conjugate probabilities, KL, fixed-noise derivatives, density normalization/Jacobians and finite tied-rank decisions against independent small calculations.
+- Evaluate multiple starts, representation/prior choices, approximation error, contamination and distribution shift with declared information boundaries and uncertainty; use external labels only when justified.
 
 Keep explanations, code/checks, measured results, and limitations as separate
 evidence. A completed reading checklist alone does not establish these abilities.
@@ -73,15 +77,16 @@ default CI does not execute unfinished learner implementations.
 
 CPU only. Use small dense matrices and bounded pairwise calculations. Large-corpus and distributed clustering are outside the required experiments.
 
-Measured on 2026-10-23 on the Ryzen 7 6800H laptop with Python 3.12.15,
-NumPy 2.5.4 and Matplotlib 3.11.2, with BLAS/OpenMP threads set to one:
+Measured on the Ryzen 7 6800H laptop with Python 3.12.15, NumPy 2.5.4 and
+Matplotlib 3.11.2, with BLAS/OpenMP threads set to one:
 
-| Published unit | Demo seconds / RSS MiB | All displayed references seconds / RSS MiB |
-| --- | --- | --- |
-| Clustering | 1.646 / 180.6 | 2.766 / 198.3 |
-| Gaussian mixtures and EM | 1.269 / 180.2 | 1.661 / 190.6 |
-| PCA and SVD | 1.881 / 180.0 | 2.328 / 197.3 |
-| Bayesian and variational inference | 1.276 / 181.3 | 1.911 / 197.3 |
+| Published unit | Measured date | Demo seconds / RSS MiB | All displayed references seconds / RSS MiB |
+| --- | --- | --- | --- |
+| Clustering | 2026-10-23 | 1.646 / 180.6 | 2.766 / 198.3 |
+| Gaussian mixtures and EM | 2026-10-23 | 1.269 / 180.2 | 1.661 / 190.6 |
+| PCA and SVD | 2026-10-23 | 1.881 / 180.0 | 2.328 / 197.3 |
+| Bayesian and variational inference | 2026-10-23 | 1.276 / 181.3 | 1.911 / 197.3 |
+| Density estimation and anomaly detection | 2026-10-25 | 1.421 / 184.9 | 1.954 / 193.9 |
 
 Each phase starts a fresh kernel; time includes startup, plots and shutdown.
 Memory is the approximate 20 ms sampled sum of driver/kernel-descendant RSS,
@@ -134,6 +139,20 @@ and approximation. Gradient experiments use eight child seeds and three paired
 sample sizes, at most 2,048 noise rows in two dimensions. Generic helpers cap
 observed counts at 10,000, future count tables at 200, Gaussian dimensions at
 eight, coordinate sweeps at 200 and supplied noise rows at 20,000.
+
+Density experiments use 240 training, 160 validation and 199 calibration rows
+in two features. Each of two fitting conditions compares five bandwidths and
+one Gaussian with fixed variance floor .02. Six method/condition records
+evaluate the same 400 nominal, 400 gap-probe and 400 shifted nominal rows,
+including separate training- and calibration-contamination interventions.
+All candidates, thresholds, counts and conditional Wilson summaries are
+retained. A separate known-uniform-score study retains 128 independent
+calibration repeats at sizes 19 and 99, paired by prefixes within repeats.
+The 64-dimensional radius illustration uses 4,000 draws; the unit-conversion
+audit repeats the small two-feature comparison. Generic fitting is capped at
+2,000 rows / 16 features, scoring/calibration at 20,000 rows, query blocks at
+256 and bandwidth grids at twelve. Featurewise blocks avoid a three-axis
+distance tensor, but total KDE work still scales with all train/query pairs.
 
 The default experiments use no GPU and stay far below the 6 GiB host-memory
 limit. Later units remain unmeasured and planned.

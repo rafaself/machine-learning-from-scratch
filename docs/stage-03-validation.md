@@ -1,8 +1,8 @@
 # Stage 03 publication record
 
-Current coverage: clustering, Gaussian mixtures/EM, PCA/SVD and Bayesian/
-variational inference, with 65 exercises.
-Stage 03 is partial; subsequent units and its capstone remain planned.
+Current coverage: clustering, Gaussian mixtures/EM, PCA/SVD, Bayesian/
+variational inference and density/anomaly detection, with 82 exercises.
+Stage 03 is partial; its representation-study capstone remains planned.
 
 ## Clustering — 2026-10-23
 
@@ -371,3 +371,113 @@ copies stay outside the canonical curriculum.
 All 24 preceding notebooks, their IDs/answers/outputs, dependencies and package
 boundaries remain unchanged. Publication stays on `curriculum-notebooks`;
 `main` is preserved.
+
+
+## Density estimation and anomaly detection — 2026-10-25
+
+Published one chapter with 17 exercises, all six categories, 79 cells, two
+demonstration cells and nine displayed Python reference blocks. Every learner
+answer stays blank, followed by separate closed hint and solution cells.
+The repository now contains 26 published chapter/project notebooks and 402
+exercises. All 25 preceding notebook byte hashes are unchanged. Stage 03
+remains partial until its representation-study capstone is developed.
+
+### Mathematical and numerical review
+
+The chapter derives the normalized multivariate Gaussian KDE, the
+change-of-variables density factor, stable log-domain scoring and the manual
+derivative of mean validation NLL with respect to log bandwidth. A separate
+Gaussian baseline uses ML covariance divisor `n` and a fixed eigenvalue floor.
+Training-only invertible centering/scaling, bounded featurewise query blocks,
+first-minimum grid selection and original-coordinate likelihood units remain
+explicit. Calibration/final rows never enter fitting or bandwidth selection.
+
+The anomaly section derives an inclusive extreme-rank p-value and its equivalent
+strict order-statistic threshold, including ties, rank resolution and an
+infinite threshold when no rank is rejectable. Rejection uses integer arithmetic
+at a declared decimal-rational alpha, rather than rounded p-values or an
+interpolating quantile API. The proof states exchangeability conditional on an
+independently frozen score, with probability marginal over calibration and a
+new nominal row. It does not claim conditional-on-calibration, subgroup,
+stream-wise, power, semantic correctness or drift guarantees.
+
+The 88 new numerical cases independently check scalar Gaussian mixtures,
+one-/two-dimensional density quadrature and mixture moments, scalar-objective
+finite differences across dimensions and block sizes, loss-average scaling,
+Gaussian covariance/floor algebra, training-only preprocessing/selection,
+copied inputs, density Jacobians and decision invariance. Exact rational
+comparisons exhaust every held-out index in distinct and tied small multisets.
+They verify conservative rank rejection, the hand threshold, decimal boundaries,
+monotone score transformations and empty queries. Further cases expose raw
+underflow versus valid log scores, arithmetic-range failure, training
+self-likelihood divergence, indexed LOO duplicate limitations, invalid shapes,
+row/grid/block budgets, noninvertible projection and Wilson endpoint behavior.
+Controlled experiment records are checked against independent scalar rank
+counts, and paired calibration repetitions retain every trial.
+
+Primary readings inspected on 2026-10-25 are Shalizi's chapter 14 (2024-03-12
+version), section 14.4 equation 14.19 and section 14.4.2, and Angelopoulos/Bates
+arXiv:2107.07511v6 (2022-12-07 metadata), section 4.4 proposition 3,
+section 3.2 and Appendix D equation 84. The chapter gives exact links,
+prerequisites, a bounded reproduction and limitations. Its source/code audit
+shows that `quantile(scores, k/n, method='higher')` can overshoot the intended
+one-based order statistic: for scores 1..9 and alpha .35 it returns eight
+rather than seven. This is more conservative and can lose power; it does not
+invalidate the paper's mathematical rank bound. The independent implementation
+uses the stated order statistic directly.
+
+### Execution, resources and measured results
+
+The full local suite passes **916 checks** in 52.90 seconds: 216 structure,
+671 numerical/project, three offline-data and 26 isolated demonstration checks.
+Locked environment sync succeeds without dependency/package changes. The CI
+numerical group includes the density file separately from structural and
+fresh-kernel execution validation. Default CI does not grade unfinished answers
+or run displayed reference solutions.
+
+A separate fresh-kernel author audit runs all nine displayed Python blocks and
+demonstrations in order without learner answers. Demonstrations take 1.421
+seconds / 184.9 MiB approximate sampled aggregate RSS; the full reference phase
+takes 1.954 seconds / 193.9 MiB. The measurements include kernel startup,
+plots and shutdown, with one BLAS/OpenMP thread and no GPU. Memory is the
+20 ms sampled sum of driver/kernel-descendant RSS, shared pages counted per
+process and browser excluded, not an exact physical-memory peak. Presets and
+bounded work sizes are documented in the stage guide.
+
+The hand KDE densities are `0.2419707245 / 0.1079819330` for bandwidths one
+and one half, with manual NLL log-bandwidth derivatives `0 / -3`. Rank scores
+1..9 at alpha .35 produce threshold seven, p-values `.4, .3, .2, .1` for
+queries `7, 7.1, 9, 10`, and strict rejection of the last three only.
+
+At the declared seed, clean Gaussian/KDE nominal flags are `30 / 29` out of
+400, gap detections `4 / 400` out of 400, and shifted-nominal flags `243 / 222`
+out of 400. The training-contaminated condition reports nominal `37 / 23`,
+gap `0 / 400`, and shifted `30 / 224`. Replacing 40 of 199 calibration rows
+with distant points produces zero flags in all three evaluation populations
+for both methods; all those outcomes are retained. These are measured
+fixture-specific results, not universal contamination directions or guaranteed
+power. Shifted inputs are declared operationally nominal but violate the
+original statistical exchangeability assumption.
+
+Across 128 independent uniform-score calibrations, mean true conditional
+false-alarm rates are about `.09050 / .09990` for calibration sizes 19 / 99,
+with across-repeat standard deviations `.05998 / .03025`. The exact marginal
+rate is .1 for both sizes. The experiment evaluates each realized threshold's
+conditional rate analytically; it does not confuse calibration variability
+with finite probe noise. Positive unit conversion shifts both models' scores
+by `log(10)` while retaining all decisions.
+
+### Rendering and preservation
+
+HTML inspection confirms nine sections, 34 initially closed disclosures,
+rendered equations and a default two-panel plot without MathJax errors.
+The default and both additional reference figures were visually inspected;
+axis labels and candidate ticks were clarified before the final author audit.
+Representative JupyterLab review confirms blank code answers and separate
+reference cells, keyboard opening/closing of displayed code and rendered
+mathematics without errors. Review copies remain outside the repository.
+
+All 25 preceding notebooks, including IDs, answers, executable sources and
+retained outputs, remain byte-for-byte unchanged. No dependency or reusable
+package was added. Publication stays on `curriculum-notebooks`; `main` is
+preserved.

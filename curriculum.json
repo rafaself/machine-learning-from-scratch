@@ -136,7 +136,7 @@
         },
         {
           "path": "notebooks/03-unsupervised-learning/density-estimation-and-anomaly-detection.ipynb",
-          "status": "planned"
+          "status": "ready"
         }
       ],
       "capstone": {
