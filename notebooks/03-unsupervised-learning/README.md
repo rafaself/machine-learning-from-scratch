@@ -1,6 +1,6 @@
 # Stage 03 — Unsupervised and Probabilistic Learning
 
-**Availability:** partial. Ready units are linked below; planned units
+**Availability:** ready. Ready units are linked below; planned units
 have no placeholder notebooks. Registry readiness describes published coverage.
 
 ## Goal and prerequisites
@@ -28,7 +28,7 @@ experience rather than prerequisites for the clustering, mixture or PCA units.
 - [pca and svd](pca-and-svd.ipynb): **ready**
 - [bayesian and variational inference](bayesian-and-variational-inference.ipynb): **ready**
 - [density estimation and anomaly detection](density-estimation-and-anomaly-detection.ipynb): **ready**
-- representation study: **planned**
+- [Capstone: representation study](../../projects/03-representation-study/representation-study.ipynb): **ready**
 
 <!-- availability:end -->
 
@@ -67,11 +67,22 @@ evidence. A completed reading checklist alone does not establish these abilities
 
 ## Capstone
 
-Representation study: compare clustering and reduced representations on the same unlabeled data, report sensitivity to scale/initialization, and identify where the chosen evaluation could mislead.
+The [representation study](../../projects/03-representation-study/README.md)
+compares a mean baseline and six identity/PCA procedures under a fixed
+three-prototype budget. A generated mixture, a single-Gaussian null and the
+licensed offline Iris artifact share label-free whole-group partitions and a
+common full-feature reconstruction metric. Training-only transforms and
+bounded starts precede validation selection; independent calibration and one
+frozen final panel follow. Initialization, units, training resampling,
+conditional loss sensitivity and model-based flag inference have distinct
+interpretations. External labels are used only in the final descriptive audit.
 
-Submit learner work on a study branch. The planned capstone reference will supply instructions,
-blank implementation cells, self-check guidance, and a report template;
-default CI does not execute unfinished learner implementations.
+Submit learner work on a study branch. The published capstone supplies
+instructions, blank implementation cells, separate collapsed references,
+independent self-check guidance, numeric checkpoint conventions and a blank
+report template. Final access is recorded on disk before inference and remains
+consumed after an exception. Default CI does not execute unfinished learner
+implementations or certify personal mastery.
 
 ## Compute and reproducibility
 
@@ -87,6 +98,7 @@ Matplotlib 3.11.2, with BLAS/OpenMP threads set to one:
 | PCA and SVD | 2026-10-23 | 1.881 / 180.0 | 2.328 / 197.3 |
 | Bayesian and variational inference | 2026-10-23 | 1.276 / 181.3 | 1.911 / 197.3 |
 | Density estimation and anomaly detection | 2026-10-25 | 1.421 / 184.9 | 1.954 / 193.9 |
+| Representation-study capstone | 2026-10-25 | 1.457 / 183.1 | 2.418 / 195.9 |
 
 Each phase starts a fresh kernel; time includes startup, plots and shutdown.
 Memory is the approximate 20 ms sampled sum of driver/kernel-descendant RSS,
@@ -154,8 +166,25 @@ audit repeats the small two-feature comparison. Generic fitting is capped at
 256 and bandwidth grids at twelve. Featurewise blocks avoid a three-axis
 distance tensor, but total KDE work still scales with all train/query pairs.
 
+The representation study uses 360 rows each for its mixture/null and the 150
+unchanged Iris rows, all with four features. First-occurrence duplicate-group
+IDs keep fixed synthetic splits independent of feature ranks. Synthetic split
+rows are 180/72/54/54; Iris rows are 73/30/24/23 across 73/29/22/23 whole groups.
+Seven procedures per task produce 21 validation records; six nonbaseline
+procedures each receive four random and four D-squared starts, at most 100
+updates per start. All 144 original starts stabilize within their budgets,
+with 1,026 total updates and no final empty centers. Tests separately retain
+deliberate budget-exhausted and empty-center cases. Every candidate's eight
+starts yield 28 common-validation pair agreements. The unit intervention repeats
+the same 144-start comparison; four training bootstrap refits per task add 96
+starts. Final loss sensitivity uses 400 complete-group resamples per task.
+Three complete numeric checkpoints are about 29–39 KiB each. Defaults use no
+GPU; fresh kernels measure all displayed references, including final guards,
+checkpoints and sensitivities. Runtime is not learner study time.
+
 The default experiments use no GPU and stay far below the 6 GiB host-memory
-limit. Later units remain unmeasured and planned.
+limit. All Stage 03 units are published and measured; later-stage experiments
+remain planned until their own gates pass.
 
 Use fixed splits/seeds, record objective normalization and model selection,
 and disclose unsuccessful runs. Standard experiments target about 30 minutes;
@@ -207,8 +236,19 @@ paper version is v9 (2018-05-09); both sources were accessed on 2026-10-23.
 The bounded work does not reproduce the full mixture experiments or establish
 general uncertainty/calibration guarantees.
 
-[CS229](https://cs229.stanford.edu/index.html-spr26) supplies scope for later
-inference units; select exact primary passages when authored.
+The density unit studies [Shalizi's chapter 14, §14.4 equation 14.19 and §14.4.2](https://www.stat.cmu.edu/~cshalizi/uADA/24/lectures/ch14.pdf)
+and [Angelopoulos/Bates, §4.4 proposition 3 and Appendix D equation 84](https://arxiv.org/html/2107.07511v6).
+Independently check multivariate normalization, finite ranks, ties and the
+translation from an order statistic to code. The guarantee's probability space
+and assumptions are separate from density accuracy, power and drift robustness.
+
+The capstone translates the PCA projection argument to a declared common
+reporting metric and studies [von Luxburg's stability overview, v1, §2 equation 2.1](https://arxiv.org/abs/1007.1075v1).
+Identify what fixed-data starts and empirical training bootstraps do and do not
+estimate, including the common-domain extension and finite optimizer. The local
+study does not reproduce the paper's asymptotic results or establish a universal
+semantic clustering criterion. The notebook specifies versions, access dates,
+selected passages and reproduction limits.
 
 The lessons are original and self-contained. External coursework supplies
 scope and alternative explanations, not copied assignment answers.

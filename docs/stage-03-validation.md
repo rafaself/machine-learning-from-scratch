@@ -1,8 +1,9 @@
 # Stage 03 publication record
 
 Current coverage: clustering, Gaussian mixtures/EM, PCA/SVD, Bayesian/
-variational inference and density/anomaly detection, with 82 exercises.
-Stage 03 is partial; its representation-study capstone remains planned.
+variational inference, density/anomaly detection and the representation-study
+capstone, with 99 exercises. Stage 03 is ready; later stages retain their own
+partial/planned statuses.
 
 ## Clustering — 2026-10-23
 
@@ -481,3 +482,146 @@ All 25 preceding notebooks, including IDs, answers, executable sources and
 retained outputs, remain byte-for-byte unchanged. No dependency or reusable
 package was added. Publication stays on `curriculum-notebooks`; `main` is
 preserved.
+
+
+## Representation-study capstone — 2026-10-25
+
+Published the Stage 03 project with 17 exercises in all six categories,
+79 cells, two demonstration cells and eleven displayed Python reference
+blocks. Blank learner answers have adjacent separate closed hints/solutions.
+Project instructions, independent self-check guidance, a blank report template
+and checkpointed study sessions accompany the starter. Stage 03 now has five
+chapters plus its capstone, **99 exercises**, and ready status. The full
+repository has 27 published chapter/project notebooks and **419 exercises**.
+All 26 preceding notebook byte hashes are preserved.
+
+### Mathematical and procedural review
+
+The project compares a mean baseline and six raw/standardized identity/PCA
+procedures under a fixed three-prototype compression budget. All candidates
+are scored in a common full-feature metric with training-fitted reporting
+scales, one feature average and one observation average. The derivation
+separates an orthogonal projection/quantization decomposition in model
+coordinates from a differently weighted reporting norm, whose cross term can
+be nonzero. Complete-row reconstruction supplies the actual common loss.
+
+Manual centroid learning uses sum SSE, independent center gradients, direct
+featurewise distances, first-center ties, explicit empty-center keep behavior,
+four random and four D-squared starts and a fixed 100-update limit. Every
+start retains initial rows, final centers, trace, iteration/empty counts,
+gradient diagnostic and stable-label/budget status. Training SSE selects a
+start within a representation; common validation loss selects a procedure.
+A hard joint Gaussian objective is explicitly distinguished from marginal
+mixture likelihood and responsibilities.
+
+The mixture and single-Gaussian null have 360 generated rows each; unchanged
+Iris has 150 rows and 147 duplicate groups. Labels are excluded from fitting,
+splitting, selection and calibration. First-occurrence group IDs equal row
+positions for distinct synthetic rows, preventing fixed seeds from selecting
+predetermined feature ranks. Integer percentage cuts avoid floating-point
+boundary off-by-one allocation. Synthetic split rows/groups are 180/72/54/54;
+Iris rows are 73/30/24/23 across 73/29/22/23 whole groups.
+
+A frozen reconstruction-loss score is independently rank-calibrated. The
+conformal claim states its exchangeability and marginal probability space;
+its score is not a density. Conditional Beta flag summaries require a separate
+Bernoulli/prior model. Iris's static convenience sample and duplicates do not
+establish those sampling assumptions. External ARI is a final descriptive audit,
+not a selection target or semantic correctness certificate. Initialization
+pairs, training bootstraps, final complete-group loss resampling and conditional
+flag inference are explicitly different uncertainty/sensitivity objects.
+
+NPZ checkpoints contain numeric parameter/loss/split/result arrays and JSON
+metadata, loaded with `allow_pickle=False`. They retain every start and the
+frozen choice, validate data identity, versions, shapes, finiteness, group
+coverage/isolation and selection arithmetic, and resume without fitting. New
+saving refuses accidental overwrite. Atomic replacement records final access
+as claimed before inference and complete with saved evidence after success.
+An inference exception leaves the persisted claim consumed. These are honest
+study-protocol aids, not adversarial access controls or proof of no test reuse.
+
+The 86 new cases independently check scalar sum-objective finite differences,
+replication scaling and empty gradients; a tiny enumerated two-group optimum;
+PCA covariance/projectors and full-row scalar loss; metric cross terms;
+hard/marginal Gaussian likelihood; labels/group splits and first-occurrence
+invariance; finite budgets/ties/zero-potential behavior; all start records;
+held-out isolation; exact pair-count ARI; exhaustive tied-score ranks; rational
+Beta moments; unequal-group resampling arithmetic; and units/bootstrap metrics.
+Checkpoint tests cover numeric round trips without refitting, no overwrite,
+changed data/audit-label bytes, malformed fields and selections, complete result
+arrays, second-call rejection, a disk claim surviving an injected inference
+error, and preservation of an earlier artifact after an injected write error.
+
+Primary readings inspected on 2026-10-25 are Ng's CS229 PCA notes (p.2 and
+pp.5–6, no explicit revision date) and von Luxburg's stability overview,
+arXiv:1007.1075v1 (2010-07-07), section 2 equation 2.1 and the perturbation/
+common-domain discussion on printed pp.4–7. The bounded source study translates
+metrics and distinguishes fixed-data starts and empirical bootstraps from the
+paper's independent population-sample expectation/asymptotic analysis.
+
+### Execution, resources and measured results
+
+The full local suite passes **1,011 checks** in 53.44 seconds: 224 structural,
+757 numerical/project, three licensed-data and 27 isolated demonstration
+checks. Locked sync succeeds with unchanged dependencies. CI includes the
+capstone's independent test file in the separate numerical group. Default CI
+does not execute or grade unfinished learner answers.
+
+The fresh-kernel author audit runs every displayed Python block plus default
+demonstrations in order, excluding learner work. Final demonstrations take
+1.457 seconds / 183.1 MiB approximate sampled aggregate RSS; all references
+take 2.418 seconds / 195.9 MiB. These phases include kernel startup, plots
+and shutdown, with one BLAS/OpenMP thread and no GPU. Memory is the 20 ms
+sampled driver/kernel-descendant RSS sum, shared pages counted per process and
+browser excluded, not exact physical peak memory.
+
+The original comparison retains 21 candidates and 144 starts, all reaching
+stable labels within 1,026 total updates and with no final empty centers.
+The unit-conversion comparison repeats the same 144-start budget; twelve
+training bootstrap refits add 96 starts. Each nonbaseline candidate retains
+all 28 common-validation restart-pair agreements. Final paired loss sensitivity
+uses 400 complete-group resamples per task. Complete checkpoints are about
+29–39 KiB each. Separate tests preserve deliberately unfinished/empty cases.
+
+Frozen selections are standardized PCA-1 for the mixture and standardized
+PCA-2 for the null/Iris. Their common final means are approximately
+`.512816 / .655262 / .275410`, versus mean-baseline `.936099 / .977323 /
+1.056529`. Selected-minus-baseline means and conditional percentile ranges are
+`−.423283 [−.535640, −.317883]`, `−.322061 [−.446863, −.210161]` and
+`−.781119 [−1.020637, −.495348]`. These conditional resampling ranges do not
+establish population coverage or account for selection/new training data.
+
+Mixture external ARI for selected PCA-1 is about `.939538`; standardized full
+coordinates have lower ARI `.348665` and higher final distortion `.537919`.
+Iris raw PCA-1 has higher species agreement `.891749` yet worse compression
+`.297186` than the selected procedure's ARI `.737878` and loss `.275410`.
+The null has no generating class, despite improved distortion. These finite
+contrasts demonstrate objective dependence, not a universal algorithm ranking.
+Selected/baseline final flags are `5/6` of 54 mixture rows, `3/4` of 54 null
+rows and `2/2` of 23 Iris rows; the last pair is descriptive under the stated
+sampling limitations.
+
+All standardized procedures preserve losses to numerical tolerance and ARI
+one under the declared positive unit conversion, whereas raw procedures can
+change substantially. The mixture's converted selection changes from
+standardized PCA-1 to raw PCA-1; this diagnostic does not replace its original
+frozen decision. Four bootstrap assignment ARIs range roughly `.916–1` for
+mixture, `.232–.791` for the null and `.678–1` for Iris. Every replicate and
+complete original final panel are retained.
+
+### Rendering, preservation and readiness
+
+HTML review confirms nine sections, 34 initially closed disclosures, rendered
+mathematics and the independent default two-panel illustration without MathJax
+errors. All three figures are visually reviewed. Representative JupyterLab
+review verifies blank written/code answers, default plots, separately collapsed
+references, keyboard opening/closing of displayed checkpoint code and rendered
+equations without errors. Review copies and execution artifacts stay outside
+the canonical repository.
+
+Every preceding notebook's bytes, IDs, learner work and retained outputs are
+unchanged. No production dependency or reusable model implementation is added.
+Stage 03 readiness means its planned coverage and publication gates are
+satisfied; it does not certify a learner's personal mastery. Publication stays
+on `curriculum-notebooks`; `main` remains unchanged. The complete nine-stage
+goal continues through the remaining Stage 04 material and Stages 05–08.

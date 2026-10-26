@@ -111,7 +111,7 @@
       "id": "03",
       "title": "Unsupervised and Probabilistic Learning",
       "directory": "notebooks/03-unsupervised-learning",
-      "status": "partial",
+      "status": "ready",
       "prerequisites": [
         "00",
         "01"
@@ -141,7 +141,7 @@
       ],
       "capstone": {
         "path": "projects/03-representation-study/representation-study.ipynb",
-        "status": "planned"
+        "status": "ready"
       }
     },
     {

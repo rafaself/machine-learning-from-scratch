@@ -28,7 +28,7 @@ merging into main. Keep learner answers on a separate study branch.
 | [00 — Mathematical Tools for Machine Learning](notebooks/00-mathematical-tools/README.md) | Apply existing calculus, linear algebra, and programming knowledge to ML arrays, statistical objectives, and finite-precision computation. | ready |
 | [01 — Machine Learning Fundamentals](notebooks/01-ml-fundamentals/README.md) | Turn predictive questions into explicitly defined models, objectives, fitting procedures, and defensible evaluations. | ready |
 | [02 — Classical Machine Learning](notebooks/02-classical-ml/README.md) | Compare different inductive biases rather than treating one fitted model as a universal solution. | ready |
-| [03 — Unsupervised and Probabilistic Learning](notebooks/03-unsupervised-learning/README.md) | Discover and model structure without confusing a visually persuasive representation with validated evidence. | partial |
+| [03 — Unsupervised and Probabilistic Learning](notebooks/03-unsupervised-learning/README.md) | Discover and model structure without confusing a visually persuasive representation with validated evidence. | ready |
 | [04 — Neural Networks and Deep Learning Foundations](notebooks/04-neural-networks/README.md) | Understand differentiation, optimization, representation, and generalization as distinct parts of neural-network learning. | partial |
 | [05 — Deep Learning Architectures](notebooks/05-deep-learning/README.md) | Use tensor/autograd infrastructure while continuing to build and explain model architectures and training loops. | planned |
 | [06 — Transformers and Generative Models](notebooks/06-transformers-generative/README.md) | Construct a complete small language-model pipeline whose tokenizer, data boundaries, architecture, training objective, generation, and evaluation are all understood. | planned |
@@ -38,8 +38,8 @@ merging into main. Keep learner answers on a separate study branch.
 <!-- availability:end -->
 
 Follow Stages 00–07 in the recommended order. Prerequisites identify what is
-actually needed: the available Stage 04 chapters can be studied after Stage 01
-while Stages 02–03 are being developed. Stage 08 contains independent tracks;
+actually needed: the retained Stage 04 chapters can also be studied directly
+after Stage 01 under their own prerequisites. Stage 08 contains independent tracks;
 choose a specialization rather than attempting every research field.
 
 Stage 00 is an applied review. Experienced learners may use its diagnostics
@@ -188,7 +188,7 @@ The [Stage 02 record](docs/stage-02-validation.md) covers its seven chapters,
 licensed offline data and integrated benchmark capstone.
 The [Stage 03 record](docs/stage-03-validation.md) covers the published
 clustering, Gaussian-mixture/EM, PCA/SVD, Bayesian/variational and
-density/anomaly chapters; its representation-study capstone remains planned.
+density/anomaly chapters and the integrated representation-study capstone.
 
 ~~~bash
 uv run pytest
@@ -200,6 +200,7 @@ uv run pytest tests/test_mixtures.py
 uv run pytest tests/test_pca.py
 uv run pytest tests/test_bayesian.py
 uv run pytest tests/test_density.py
+uv run pytest tests/test_representation_study.py
 uv run pytest tests/test_datasets.py
 uv run pytest tests/test_execution.py
 ~~~
