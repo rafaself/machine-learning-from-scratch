@@ -176,7 +176,7 @@
         },
         {
           "path": "notebooks/04-neural-networks/optimization-geometry-and-diagnostics.ipynb",
-          "status": "planned"
+          "status": "ready"
         },
         {
           "path": "notebooks/04-neural-networks/normalization-and-dropout.ipynb",

@@ -191,7 +191,8 @@ clustering, Gaussian-mixture/EM, PCA/SVD, Bayesian/variational and
 density/anomaly chapters and the integrated representation-study capstone.
 The [Stage 04 record](docs/stage-04-validation.md) covers new neural-foundation
 units, including categorical objectives, manual multiclass networks and
-stateful optimizer/checkpoint experiments;
+stateful optimizer/checkpoint experiments and independently checked curvature/
+training diagnostics;
 the retained binary chapters keep their original content and identifiers.
 
 ~~~bash
@@ -207,6 +208,7 @@ uv run pytest tests/test_density.py
 uv run pytest tests/test_representation_study.py
 uv run pytest tests/test_multiclass.py
 uv run pytest tests/test_optimizers.py
+uv run pytest tests/test_geometry.py
 uv run pytest tests/test_datasets.py
 uv run pytest tests/test_execution.py
 ~~~

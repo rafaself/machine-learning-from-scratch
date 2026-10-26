@@ -1,8 +1,8 @@
 # Stage 04 publication record
 
 Current coverage: the three retained binary neural chapters, multiclass
-objectives and Momentum/Adam, 94 exercises in five notebooks. Stage 04
-remains partial: optimization geometry, normalization/dropout,
+objectives, Momentum/Adam and optimization geometry/diagnostics, 115 exercises
+in six notebooks. Stage 04 remains partial: normalization/dropout,
 the manually built differentiation engine and the integrated capstone are
 planned. This record documents new units; retained-chapter checks and timings
 are also recorded in the stage guide and original publication record.
@@ -299,3 +299,133 @@ opening/closing of a separate displayed reference. Execution/review copies
 remain outside the canonical notebooks. All 28 preceding notebook byte hashes
 are preserved; publication remains on `curriculum-notebooks`, with `main`
 unchanged. The full nine-stage goal remains active.
+
+## Optimization geometry and diagnostics — 2026-10-25
+
+The new prefix 04.06 adds 21 exercises in all six categories, 99 cells, three
+demonstration cells and nine displayed Python blocks. Blank learner answers
+retain separate adjacent closed hints/solutions. All 29 preceding notebook
+byte hashes, IDs, learner work and outputs are preserved. The repository now
+has 30 published chapter/project notebooks / 479 exercises. Stage 04 has six
+chapters / 115 exercises and remains partial; normalization/dropout, manual
+reverse-mode autodiff and the capstone remain planned. Dependencies/package
+implementations are unchanged.
+
+### Mathematical and numerical review
+
+The chapter distinguishes local Taylor curvature, a segment-wide smoothness
+bound and exact constant positive-definite quadratic eigenmode contraction.
+Rate boundaries, the minimax constant rate and condition number have explicit
+assumptions. A restricted two-weight linear-model example has identical
+predictive functions but different coordinate-dependent Hessian spectra;
+raw sharpness is not treated as a generalization guarantee.
+
+Manual tangent-forward and tangent-reverse calculations give analytic
+Hessian–vector products without a dense Hessian or autodiff framework. The
+reverse tangent includes both differentiated matrix products and the hidden
+activation's second derivative. Mean half-MSE averages once at the output;
+L2 penalizes weights only, and inputs/targets/directions stay fixed during
+parameter differentiation. Tanh/linear activations support smooth curvature;
+ReLU has a declared zero first-order derivative at zero and its classical
+Hessian products are deliberately outside the implementation's scope.
+
+The full Hessian is separated from PSD Gauss–Newton plus penalty and the
+residual-curvature term. A hand stationary tanh saddle has loss .5, a zero
+gradient, full spectrum (-1,0,1,1), GN spectrum (0,0,0,1), and a directly checked
+loss-decreasing direction. Zero-residual fixtures freeze their generated
+targets before differentiation and give H-G errors at floating-point scale.
+Dense inspection records raw symmetry error before using a symmetric part.
+
+An independent list/Python-math objective calls no vector forward, unpack,
+gradient or tangent helper. At step 1e-4, the displayed moderate-scale fixture
+has gradient/product maximum absolute errors about 2.98e-10 / 1.45e-9, with
+declared tolerances 1e-6. A separate saddle product check is about 9.44e-9.
+Larger/smaller steps show truncation/cancellation sensitivity; the 1e-6-step
+product error is about 9.19e-6 and is retained rather than called a pass at the
+middle-step tolerance. Exact products still use floating-point arithmetic.
+
+The locked environment synchronized successfully. The complete local suite
+passes 1,319 checks in 54.85 seconds: 248 structural, 1,038 numerical/project,
+three licensed-data and 30 isolated fresh-kernel demonstration cases. Learner
+answers and displayed references are omitted from default execution checks;
+the separate author audit executes all displayed Python blocks in order.
+
+The 75 new cases independently verify all parameters, inputs, prediction
+tangents and Hessian products across batch sizes, depths, tanh/linear choices
+and penalties. Other cases check row replication, bias/penalty masks, product
+linearity/symmetry, exact hand matrices, output Jacobians, changed-residual
+curvature, zero-residual equality and a single-layer closed-form Hessian.
+The displayed scalar auditor is separately checked and detects an injected
+wrong product. Independent eigenbasis paths, initialization draw/scale pairing,
+output-probe VJPs and moment identities, ReLU gates and smoothness boundaries,
+fixed-row covariance laws, clipping counterexamples, failed work accounting,
+training-only preprocessing and visible numerical-range errors are covered.
+
+For fixed parameters the row-gradient covariance uses ddof=0. Exact replacement
+batches give S/b; uniform subsets give (n-b)S/[b(n-1)]. Shared deterministic
+penalty gradients change the mean but not centered covariance. Six finite
+enumerations, including 4,096 ordered batches at n=8,b=4, agree below the
+declared 1e-12 tolerance. A separate scalar (-4,2,2) distribution has mean zero
+and clipped mean 1/3, refuting unrestricted clipping-unbiasedness reasoning.
+Changing-parameter epoch sampling is explicitly a different conditional claim.
+
+Primary passages inspected on 2026-10-25 are Pearlmutter's dated author copy
+§§3/4.1 and equations (2)–(5); Glorot/Bengio §4.2; He et al. v1 §2.2 equations
+(5)–(10); and Bottou/Curtis/Nocedal v3 equations (4.25)–(4.26) with the following
+mini-batch discussion. The chapter declares prerequisite/local-check/
+reproduction boundaries; it copies no coursework answers or paper benchmark.
+
+### Actual execution, experiments and resources
+
+Fresh demonstrations take 1.367s / 183.5 MiB; all displayed references plus
+demonstrations take 3.587s / 210.2 MiB on Python 3.12.15 / NumPy 2.5.4 /
+Matplotlib 3.11.2, CPU-only Ryzen 7 6800H, one BLAS/OpenMP thread. RSS is
+approximate 20ms sampled aggregate driver/kernel-descendant memory, counting
+shared pages per process and excluding the browser, not exact physical peak.
+Timings include kernel startup, plotting and shutdown. GPU allocation is zero.
+
+Three rotated quadratic paths retain all 80 updates. Final losses at rates
+.03/.07/.09 are about .00405818 / .00000481 / 1.5771e17; all-mode instability
+is retained and not hidden outside a contour viewport. The default figures
+illustrate analytic contours/activations and covariance denominators without
+defining completed learner implementations.
+
+The 24 depth-five initialization profiles use widths (8,16,16,16,16,16,1),
+1,249 parameters, 128 fixed Gaussian rows and a common independent output
+probe with RMS 1. Hidden normal scales vary while nonzero output scaling is
+fixed. Means, variances, second moments, derivative/low-derivative statistics
+and sensitivity RMS are retained, including input VJPs. Positive rescaling
+with zero-bias ReLU preserves gate patterns under these paired draws despite
+different transmitted sensitivities. Normal draws match the cited Glorot
+variance, not its uniform distribution or benchmark. No all-direction
+Jacobian-conditioning or finite-depth variance guarantee is inferred.
+
+The shallow mechanism study uses a 25-parameter network on separately
+generated 96-row train/validation panels, each constructed from 48 draws and
+their sign-reversed partners. Training-only scaling is explicit; within-panel
+dependence is intentional and prevents an IID-interval interpretation.
+Five prescribed initialization/rate conditions and three paired seeds produce
+15 retained runs. The common objective ceiling 1e12 stops oversized-rate runs
+after 7/7/6 accepted updates; all other runs use 300. Actual completed/attempted
+work is 3,620 updates, not the 4,500 maximum budget. Numerical failures preserve
+the last finite state and failed-attempt count. Initial Glorot vectors are
+identical in the corresponding oversized-rate comparison.
+
+Zero networks remain stationary with training loss about .4316997 and a
+gradient norm about 8.67e-19; this is not labeled a minimum. Tiny shallow
+networks learn to losses .0155–.0224, so the deep profile is not generalized
+into a universal small-initialization failure rule. Every seed, ceiling-stopped
+outcome, trace, actual count and descriptive validation score is retained.
+There is no candidate selection or final-test claim in this mechanism study.
+
+### Rendering and preservation
+
+HTML review confirms nine sections, 42 closed disclosures, two default plots
+and equations without MathJax errors. Seven actual figures are visually
+reviewed, including trajectories, curvature, covariance, initialization and
+all failed/stationary training outcomes. Representative JupyterLab inspection
+checks the blank code-answer cell, separately keyboard-opened/closed reference
+and rendered math. Review/execution copies remain outside the canonical
+notebooks. The 29 previous notebooks stay byte-for-byte intact. Publication
+remains on curriculum-notebooks, main is unchanged and the nine-stage goal
+remains active.
