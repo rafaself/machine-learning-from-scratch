@@ -11,7 +11,8 @@ Understand differentiation, optimization, representation, and generalization as 
 chapters can be studied directly after Stage 01 under their stated assumptions;
 the published classical/probabilistic stages provide useful comparison
 experience rather than mandatory prerequisites for every neural unit. The
-multiclass chapter builds on the retained backpropagation and MLP chapters.
+multiclass and optimizer chapters build on the retained backpropagation and
+MLP chapters. The valid-token accumulation connection uses the multiclass unit.
 
 ## Ordered units
 
@@ -19,7 +20,7 @@ multiclass chapter builds on the retained backpropagation and MLP chapters.
 2. Backpropagation: shared paths, cached parameter snapshots, batched affine/activation rules, and gradient checking.
 3. Multilayer perceptron: one/two hidden layers, initialization, manual training, regularization, and validation.
 4. Multiclass learning objectives: categorical likelihood, stable log softmax, vector/Hessian products, manual network derivatives, soft targets, weights/masks, temperature calibration, decision costs, and valid-token reductions.
-5. Momentum and Adam: stateful updates, bias correction, schedules, optimizer comparisons, and checkpoint state.
+5. Momentum and Adam: exact state/clock conventions, initialization correction, finite epsilon, L2 versus AdamW, weighted accumulation/clipping, schedules, paired-seed comparisons, and verified JSON checkpoint continuation.
 6. Optimization geometry and diagnostics: curvature/spectrum, stochastic gradient variation, activation/gradient distributions, initialization, saturation, and controlled failure analysis.
 7. Normalization and dropout: training/evaluation behavior, statistical axes, randomness, and reproducibility.
 8. Automatic differentiation: build a small reverse-mode engine after deriving gradients manually; accumulation, graph reuse, broadcasting reductions, and elementary operations.
@@ -30,7 +31,7 @@ multiclass chapter builds on the retained backpropagation and MLP chapters.
 - [backpropagation](backpropagation.ipynb): **ready**
 - [multilayer perceptron](multilayer-perceptron.ipynb): **ready**
 - [multiclass learning objectives](multiclass-learning-objectives.ipynb): **ready**
-- momentum and adam: **planned**
+- [momentum and adam](momentum-and-adam.ipynb): **ready**
 - optimization geometry and diagnostics: **planned**
 - normalization and dropout: **planned**
 - automatic differentiation: **planned**
@@ -49,6 +50,14 @@ probability arrays are `(n,K)`. Weight matrices follow input/output widths and
 biases remain one-dimensional. No reference model is moved into the package.
 The future engine must be compared with these manual derivatives and
 independent finite differences.
+
+The optimizer unit implements complete named-shape NumPy transitions for SGD,
+gradient-buffer momentum, corrected Adam and masked AdamW. It independently
+audits a manual regression MLP, then separates objective/gradient correctness,
+optimizer state correctness and experimental comparisons. Checkpoints include
+moments, update counter, the original schedule budget, PCG64 sampler state,
+processed-training fingerprint and trace. A real file round trip demonstrates
+exact continuation on the measured environment; weights alone do not suffice.
 
 Every published notebook uses the nine chapter sections, explicit notation,
 worked examples, six exercise types, and dedicated answer cells followed by
@@ -75,10 +84,10 @@ default CI does not execute unfinished learner implementations.
 ## Compute and reproducibility
 
 The three retained chapters were rechecked locally on 2026-10-22; the new
-multiclass unit was measured on 2026-10-25. Both use Python 3.12.15,
+multiclass and optimizer units were measured on 2026-10-25. They use Python 3.12.15,
 NumPy 2.5.4, Matplotlib 3.11.2, the CPU-only Ryzen 7 6800H, and one
 OpenBLAS/OpenMP thread. These are measurements of available chapters, not
-certification of planned optimizer/autodiff material or the full capstone.
+certification of planned geometry, normalization/autodiff or the full capstone.
 
 | Published unit | Measured date | Fresh-kernel demo seconds / RSS MiB | All displayed references seconds / RSS MiB |
 | --- | --- | --- | --- |
@@ -86,6 +95,7 @@ certification of planned optimizer/autodiff material or the full capstone.
 | Backpropagation | 2026-10-22 | 1.417 / 200.1 | 2.165 / 215.4 |
 | Multilayer perceptron | 2026-10-22 | 1.497 / 203.0 | 9.859 / 234.7 |
 | Multiclass learning objectives | 2026-10-25 | 1.587 / 180.7 | 8.533 / 198.8 |
+| Momentum and Adam | 2026-10-25 | 1.446 / 183.7 | 7.808 / 201.0 |
 
 Elapsed time includes kernel startup, plotting, and shutdown. RSS is the
 approximate 20 ms sampled sum for the driver and kernel descendants, including
@@ -108,6 +118,20 @@ Generic helpers cap 2,000 rows, 32 input/class columns, hidden width 64,
 3,000 training steps, 16 temperatures and 800 resamples. Memory stays far below
 6 GiB host, with zero GPU allocation. These are program runtimes, not the time
 needed to derive, implement and critique the material.
+
+The optimizer pilot uses independent 192/96/192-row train/validation/final
+samples, two correlated features, a 33-parameter tanh MLP and weight-only L2
+coefficient .002. Three optimizers, three rates and three paired seeds give
+27 complete runs, each with 600 updates, batch size 24 and a 20-update warmup/
+cosine schedule. All 16,200 update records and 388,800 sampled row occurrences
+are accounted for. Each algorithm's rate is chosen by mean validation
+half-MSE across all three seeds; seeds are not selected. Every chosen rate
+hits its declared upper grid boundary, an explicit tuning limitation. One
+final panel caches all nine selected-rate/seed predictions and a training-mean
+baseline. A separate 2,054-update resume audit compares complete restoration
+with zeroed moments and a reset sampler at the same clock. Generic helpers
+bound rows/features/widths, update counts, accumulation groups and JSON size;
+required work stays far below the host limit and uses no GPU.
 
 CPU only. Small batches, widths, and graphs keep engine/debugging work inspectable. Large-model training is introduced after this foundation.
 
@@ -139,9 +163,20 @@ parameterizations, and avoid translating empirical effectiveness into a
 conditional or distribution-shift guarantee. The notebook states access dates
 and reproduction limits; no paper's large-model benchmark is reproduced.
 
+The optimizer unit studies [Sutskever et al. (2013), §2 equations (1)–(4)](https://proceedings.mlr.press/v28/sutskever13.pdf),
+translating displacement velocity into a gradient buffer only under a constant
+rate. [Kingma/Ba, v9 (2017-01-30), Algorithm 1 and §§2–3](https://arxiv.org/pdf/1412.6980v9)
+supplies exact moment/correction and epsilon conventions.
+[Loshchilov/Hutter, v3 (2019-01-04), §2 and Algorithm 2](https://arxiv.org/pdf/1711.05101v3)
+supplies the coupled/decoupled decay comparison with explicit coefficient
+conversion. [Reddi/Kale/Kumar, v1 (2019-04-19), §3 Theorem 1 and Appendix A](https://arxiv.org/pdf/1904.09237v1)
+supplies a restricted counterexample study: distinguish online average regret,
+finite objective training and universal convergence claims. The notebook
+declares prerequisites, local checks, access dates and reproduction limits.
+
 [CS229](https://cs229.stanford.edu/index.html-spr26) supplies broader
-neural-network scope. Exact optimizer and reverse-mode primary passages will
-be selected when those units are developed.
+neural-network scope. Exact reverse-mode passages will be selected when that
+unit is developed.
 
 The lessons are original and self-contained. External coursework supplies
 scope and alternative explanations, not copied assignment answers.
@@ -150,9 +185,11 @@ scope and alternative explanations, not copied assignment answers.
 
 The original perceptron, backpropagation and MLP chapters retain their original
 exercise IDs and bytes. The new multiclass chapter uses prefix `04.04` and
-adds 19 exercises. Optimizers, optimization geometry, normalization/dropout,
-autodiff and the integrated capstone remain planned. Four published chapters
-do not mean that the full stage has passed its completion gate.
+adds 19 exercises. The optimizer chapter uses prefix `04.05` and adds 20,
+bringing Stage 04 to 94 exercises in five published chapters. Optimization
+geometry, normalization/dropout, autodiff and the integrated capstone remain
+planned. Five published chapters do not mean that the full stage has passed
+its completion gate.
 
 See the [Stage 04 publication record](../../docs/stage-04-validation.md) for
 current numerical, preservation, execution and rendering evidence.

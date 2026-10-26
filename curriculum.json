@@ -172,7 +172,7 @@
         },
         {
           "path": "notebooks/04-neural-networks/momentum-and-adam.ipynb",
-          "status": "planned"
+          "status": "ready"
         },
         {
           "path": "notebooks/04-neural-networks/optimization-geometry-and-diagnostics.ipynb",

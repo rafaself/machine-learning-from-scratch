@@ -1,8 +1,8 @@
 # Stage 04 publication record
 
-Current coverage: the three retained binary neural chapters and the new
-multiclass-learning-objectives chapter, 74 exercises in four notebooks. Stage 04
-remains partial: Momentum/Adam, optimization geometry, normalization/dropout,
+Current coverage: the three retained binary neural chapters, multiclass
+objectives and Momentum/Adam, 94 exercises in five notebooks. Stage 04
+remains partial: optimization geometry, normalization/dropout,
 the manually built differentiation engine and the integrated capstone are
 planned. This record documents new units; retained-chapter checks and timings
 are also recorded in the stage guide and original publication record.
@@ -167,3 +167,135 @@ sources and outputs. The package/dependency environment is unchanged. Stage 04
 stays partial and future units have no placeholder notebooks. Publication stays
 on `curriculum-notebooks`; `main` is preserved. The full nine-stage goal remains
 active.
+
+## Momentum and Adam — 2026-10-25
+
+The new `04.05` chapter contains 20 exercises in all six categories, 95 cells,
+three demonstration cells and nine displayed Python reference blocks. Blank
+learner answers retain separate adjacent closed hints and solutions. All 28
+previously published notebooks retain exact bytes, IDs, learner work and
+outputs. The repository now has 29 published chapter/project notebooks and
+458 exercises. Stage 04 has five chapters / 94 exercises and stays partial;
+geometry, normalization/dropout, autodiff and the capstone remain planned.
+Dependencies and the reusable package are unchanged.
+
+### Mathematical and numerical review
+
+The chapter separates a derivative at one snapshot, the history-dependent
+optimizer transition and the one-based update schedule. It derives the
+unnormalized gradient-buffer recurrence, its normalized-EMA conversion and
+the constant-rate mapping to displacement momentum. A two-rate hand example
+shows why that last mapping fails under a schedule. A fixed scalar quadratic
+has the explicitly restricted characteristic-root stability interval
+`0 < rate * curvature < 2 * (1 + momentum)`; no nonconvex guarantee is inferred.
+
+Adam's first/second raw moments, correction exponent and outside-root epsilon
+are explicit. The equal-moment expectation argument does not require complete
+independence, but does not remove distribution drift or make the nonlinear
+adaptive direction unbiased. The corrected second moment is not centered
+variance. Positive complete-gradient scaling changes the effective finite
+epsilon; it does not establish general reparameterization invariance. Zero
+gradient, zero rate, missing gradient and a skipped transition have different
+declared effects on state and clock.
+
+Objective L2 enters the supplied gradient and therefore the moment history.
+Masked AdamW uses data-gradient moments and a simultaneous rate-scaled decay
+from old parameters. A hand counterexample, bias-excluding mask and explicit
+paper-to-notebook coefficient conversion prevent conflation with coupled Adam.
+Plain-SGD equivalence is limited to the declared convention. Total zero-data-
+direction shrinkage depends on the product over schedule/update factors.
+
+Unequal-mass accumulation combines mean gradients at one snapshot, with one
+normalization and one optimizer/schedule advance. Positive relative masses
+outside float64 range fail visibly, including underflow after normalization.
+Global clipping occurs after aggregation and before moments; it is not
+coordinate clipping or an unbiasedness guarantee. Prescribed scalar-gradient
+and vector-clipping cases show that accumulation, adaptation and clipping do
+not generally commute. All-masked means and nonfinite arithmetic are rejected.
+
+Manual tanh regression uses half-MSE and weight-only `lambda/2` penalties,
+one-dimensional biases and a single output average. An independent Python-
+scalar objective does not call vector forward/gradient or optimizer helpers.
+Every parameter is centrally differenced; maximum fixture error at `1e-5`
+is about `1.02e-11`, below `1e-7`. The displayed audit also measures large/small
+finite-difference step sensitivity. Hidden nonfinite preactivations fail before
+tanh; zero L2 skips an unused overflowing weight-square calculation.
+
+The locked environment synchronized successfully. The complete local suite
+passes **1,235 checks in 52.90 seconds**: 240 structural, 963 numerical/project,
+three licensed-data and 29 isolated fresh-kernel execution cases. The latter
+run demonstrations without learner answers or displayed reference snippets;
+the separate author audit executes every displayed Python block in order.
+
+The 114 new numerical cases independently check full scalar state sequences,
+clipping and exact named shapes, raw/corrected moments, near-one/zero betas,
+finite-epsilon placement, gradient scaling, state/counter failures, visible
+range failures and input nonmutation. Network checks cover each parameter,
+batch size/width/L2 variants, row replication, bias exclusion and the separate
+displayed auditor. Schedule/accumulation checks cover both warmup extremes,
+the zero-rate endpoint, safe large masses and unequal-mass/noncommuting cases.
+Checkpoint tests use real files for all four algorithms, exact complete state
+and history comparisons, incomplete restores, checksums, finite/schema/size/
+counter/RNG validation, changed training data/order and transactional failures.
+Experiment tests cover paired streams, all candidate order/outcomes, selection
+means, validation/final isolation, nine cached final predictions, consumption
+after an inference failure and explicitly retained failed-attempt groups.
+
+Primary passages inspected on 2026-10-25 are Sutskever et al. §2 equations
+(1)–(4); Kingma/Ba v9 Algorithm 1 and §§2–3; Loshchilov/Hutter v3 §2 and
+Algorithm 2; and Reddi/Kale/Kumar v1 §3 Theorem 1 with Appendix A. The reading
+table states prerequisites, local checks, notation conversion and limits.
+The finite regression pilot reproduces no deep-network benchmark, online
+regret counterexample or asymptotic proof.
+
+### Actual execution and resources
+
+Python 3.12.15, NumPy 2.5.4 and Matplotlib 3.11.2 on the CPU-only Ryzen 7 6800H,
+with one BLAS/OpenMP thread. Fresh demonstrations take `1.446s / 183.7 MiB`;
+all displayed references plus demonstrations take `7.808s / 201.0 MiB`.
+Memory is approximate 20ms sampled aggregate driver/kernel-descendant RSS,
+with shared pages counted per process and browser memory excluded; it is not
+an exact physical-memory peak. Timings include kernel startup/plotting/shutdown.
+GPU allocation is zero and the working set is well below 6 GiB host.
+
+Independent train/validation/final streams have 192/96/192 rows in two
+correlated features, with training-only means/scales. A 33-parameter, width-8
+tanh network uses L2 `.002`. Three optimizers, three rates and three paired
+initializations produce 27 complete 600-update runs: 16,200 updates and 388,800
+sampled row occurrences. Batch size is 24 with replacement; the original
+600-update cosine budget includes 20 warmup updates and a final zero-rate
+transition. All traces, final full-gradient norms and measured candidate
+times are retained; all supplied outcomes are `fixed_budget`, not converged.
+
+Mean validation half-MSE chooses SGD `.12`, momentum `.024` and Adam `.03`,
+with means about `.0864038 / .0436631 / .0141053`. Every selected rate is an
+upper grid boundary, explicitly limiting tuning claims. Seeds are never
+selected. The single frozen final panel caches all nine predictions and gives
+mean half-MSE about `.1021331 / .0535660 / .0188181`; training-mean baseline
+is `.4202362`. Seed ranges are sensitivity observations, not confidence
+intervals or a universal ranking. The published synthetic data are an
+author-visible learning fixture; independent comparisons need fresh frozen
+final streams and declared tuning procedures.
+
+The separate resume audit uses 2,054 total updates across continuous, partial,
+complete-restored and two intentionally incomplete continuation calls. A
+39,203-byte temporary checkpoint at update 173 restores moments, counter,
+schedule, PCG64 state and trace and continues for 427 updates. The serialized
+complete final state exactly matches continuous training on this environment.
+Zeroed moments and a reset sampler preserve the clock/budget but produce final
+parameter distances about `.20763697 / .07313312`; their similar objective
+curves do not establish identical training. The JSON checksum detects content
+changes, not authenticity or mathematical truth; no executable serialization
+is loaded. Dataset arrays are supplied separately and fingerprint-checked.
+
+### Rendering and preservation
+
+HTML review confirms nine sections, 40 initially closed disclosures, rendered
+equations with no MathJax errors and two default analytic figures. All four
+actual figures are visually inspected: EMA/schedule, finite-epsilon response,
+full-objective/all-validation-group comparison and incomplete-restore effects.
+Representative JupyterLab review checks formulas, blank answers and keyboard
+opening/closing of a separate displayed reference. Execution/review copies
+remain outside the canonical notebooks. All 28 preceding notebook byte hashes
+are preserved; publication remains on `curriculum-notebooks`, with `main`
+unchanged. The full nine-stage goal remains active.
