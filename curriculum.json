@@ -168,7 +168,7 @@
         },
         {
           "path": "notebooks/04-neural-networks/multiclass-learning-objectives.ipynb",
-          "status": "planned"
+          "status": "ready"
         },
         {
           "path": "notebooks/04-neural-networks/momentum-and-adam.ipynb",

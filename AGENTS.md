@@ -38,8 +38,10 @@
 
 ## Mathematics and implementation
 
-- Use row-wise examples, shape (n, d). The first three chapters use (n,) targets;
-  the network chapters explicitly use (n, 1) targets/probabilities.
+- Use row-wise examples, shape (n, d). The first three chapters use (n,) targets.
+  Retained binary network chapters use (n, 1) targets/probabilities. Multiclass
+  chapters explicitly distinguish integer labels (n,) from target distributions
+  and probabilities (n, K), with a declared class-column order and reduction.
 - Network weights have shape (previous_width, next_width) and biases are stored
   as one-dimensional arrays broadcast over observations.
 - Define whether a loss is half-MSE, MSE, average cross-entropy, or a regularized

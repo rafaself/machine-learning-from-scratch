@@ -40,6 +40,7 @@ jobs:
           tests/test_numerics.py tests/test_classical_benchmark.py
           tests/test_clustering.py tests/test_mixtures.py tests/test_pca.py
           tests/test_bayesian.py tests/test_density.py tests/test_representation_study.py
+          tests/test_multiclass.py
 
       - name: Check licensed offline data
         run: uv run --locked --no-sync pytest tests/test_datasets.py
